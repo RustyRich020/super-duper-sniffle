@@ -1,0 +1,8 @@
+# Minimal Supabase CLI config. Run `supabase link` to connect this to the
+# remote project (it will prompt for the database password).
+project_id = "meosdrvquwybipqjrzwv"
+
+[db]
+# Local dev Postgres port (only used by `supabase start`).
+port = 54322
+major_version = 17
