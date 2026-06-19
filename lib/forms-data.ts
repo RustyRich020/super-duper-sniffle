@@ -1,0 +1,622 @@
+// Ported from project/forms-data.js — schema for every document type in "Glossary by Domain".
+// Section types: box (ruled writing area), draw (blank sketch box),
+// cols (labeled columns + ruled rows), check (checklist items). w = flex weight.
+
+export interface RawSection {
+  t: "box" | "draw" | "cols" | "check";
+  l: string;
+  h?: string;
+  w?: number;
+  c?: string[];
+  items?: string[];
+}
+export interface RawForm {
+  code: string;
+  title: string;
+  d: number;
+  purpose?: string;
+  meta?: string[];
+  s?: RawSection[];
+}
+
+// Forms Workbook — schema for every document type in "Glossary by Domain".
+// Section types: box (ruled writing area), draw (blank sketch box),
+// cols (labeled columns + ruled rows), check (checklist items). w = flex weight.
+
+export const DOMAINS: string[] = [
+  "Product & Requirements",
+  "Architecture & Design",
+  "Engineering & Code",
+  "Operations, SRE & Support",
+  "Project & Process",
+  "Quality & Testing",
+  "Security, Compliance & Governance",
+  "End-User & Training"
+];
+
+const DM: string[] = ["Owner", "Author", "Status", "Date"];
+
+export const FORMS: RawForm[] = [
+  // ---------- 1. Product & Requirements ----------
+  { code:"PRD", title:"Product Requirements Document", d:0,
+    purpose:"Define what a product or feature should do, and how we will know it worked.",
+    meta:["Owner (PM)","Author","Status","Target release"], s:[
+    {t:"box",l:"Problem statement & evidence",h:"The user or business problem; data, tickets, or quotes that prove it is real.",w:2},
+    {t:"box",l:"Goals & success metrics",h:"Each goal measured by a metric, target, and timeframe.",w:2},
+    {t:"box",l:"Non-goals",h:"Explicitly out of scope — prevents most scope creep.",w:1},
+    {t:"cols",l:"Requirements",c:["#","Requirement","Priority"],w:3},
+    {t:"box",l:"Risks & open questions",w:1}]},
+  { code:"BRD", title:"Business Requirements Document", d:0,
+    purpose:"Capture why the business needs something, at a higher level than a PRD.",
+    meta:["Sponsor","Analyst","Status","Date"], s:[
+    {t:"box",l:"Business objective & why now",w:2},
+    {t:"box",l:"Stakeholders & needs",w:2},
+    {t:"box",l:"Expected outcomes & benefits",w:2},
+    {t:"box",l:"Constraints & assumptions",w:1},
+    {t:"box",l:"Success criteria",w:1}]},
+  { code:"MRD", title:"Market Requirements Document", d:0,
+    purpose:"Describe the market opportunity that justifies building something.",
+    meta:DM, s:[
+    {t:"box",l:"Market opportunity",w:2},
+    {t:"box",l:"Target customers & segments",w:2},
+    {t:"box",l:"Competitive landscape",w:2},
+    {t:"box",l:"Market-driven needs",w:2},
+    {t:"box",l:"Go / no-go rationale",w:1}]},
+  { code:"FRD / FRS", title:"Functional Requirements Specification", d:0,
+    purpose:"Translate business requirements into specific system behaviours.",
+    meta:["Analyst","Reviewer","Status","Date"], s:[
+    {t:"box",l:"Scope & context",w:1},
+    {t:"box",l:"Functional requirements",h:"\u201cThe system shall \u2026\u201d statements.",w:3},
+    {t:"box",l:"Inputs & outputs",w:2},
+    {t:"box",l:"Business rules",w:2},
+    {t:"box",l:"Dependencies",w:1}]},
+  { code:"SRS", title:"Software Requirements Specification", d:0,
+    purpose:"Formally specify functional and non-functional requirements.",
+    meta:["Engineer","Reviewer","Version","Date"], s:[
+    {t:"box",l:"Purpose & scope",w:1},
+    {t:"box",l:"Functional requirements",w:2},
+    {t:"box",l:"Non-functional requirements",w:2},
+    {t:"box",l:"External interfaces",w:1},
+    {t:"cols",l:"Approvals",c:["Name","Role","Signature","Date"],w:1}]},
+  { code:"NFR", title:"Non-Functional Requirements", d:0,
+    purpose:"Specify the quality attributes — the \u201chow well,\u201d not the \u201cwhat.\u201d",
+    meta:DM, s:[
+    {t:"box",l:"Performance & latency targets",w:1},
+    {t:"box",l:"Availability & reliability",w:1},
+    {t:"box",l:"Scalability",w:1},
+    {t:"box",l:"Security & compliance",w:1},
+    {t:"box",l:"Accessibility",w:1}]},
+  { code:"Stories / Epics", title:"User Stories & Epics", d:0,
+    purpose:"Agile-format requirements grouped under a common goal.",
+    meta:["Owner","Epic","Sprint","Status"], s:[
+    {t:"box",l:"Epic / theme",w:1},
+    {t:"box",l:"Story",h:"As a [user], I want [capability] so that [benefit].",w:2},
+    {t:"box",l:"Acceptance criteria",w:2},
+    {t:"box",l:"Estimate & priority",w:1},
+    {t:"box",l:"Dependencies",w:1}]},
+  { code:"AC / DoD", title:"Acceptance Criteria & Definition of Done", d:0,
+    purpose:"The testable conditions that mark a story or release complete.",
+    meta:["Team","Owner","Sprint","Date"], s:[
+    {t:"box",l:"Story / item",w:1},
+    {t:"box",l:"Acceptance criteria",h:"Given / When / Then.",w:3},
+    {t:"check",l:"Definition of Done",items:["Tests pass","Peer reviewed","Docs updated","Acceptance met","Deployed / released"],w:2},
+    {t:"box",l:"Notes",w:1}]},
+  { code:"Use Case", title:"Use Case Document", d:0,
+    purpose:"Describe actor\u2013system interactions step by step.",
+    meta:["Author","Actor","Status","Date"], s:[
+    {t:"box",l:"Actor & goal",w:1},
+    {t:"box",l:"Preconditions",w:1},
+    {t:"box",l:"Main flow",h:"Numbered steps.",w:3},
+    {t:"box",l:"Alternate & exception flows",w:2},
+    {t:"box",l:"Postconditions",w:1}]},
+  { code:"Vision", title:"Product Vision & Strategy", d:0,
+    purpose:"The long-horizon north star: where the product is going and why.",
+    meta:["Owner","Horizon","Status","Date"], s:[
+    {t:"box",l:"Vision statement",w:2},
+    {t:"box",l:"Target users & problem",w:2},
+    {t:"box",l:"Strategic pillars",w:2},
+    {t:"box",l:"1\u20133 year outcomes",w:1},
+    {t:"box",l:"What we won\u2019t do",w:1}]},
+  { code:"Roadmap", title:"Roadmap", d:0,
+    purpose:"A time-phased Now / Next / Later view of planned initiatives.",
+    meta:["Owner","Period","Status","Date"], s:[
+    {t:"box",l:"Now",w:2},
+    {t:"box",l:"Next",w:2},
+    {t:"box",l:"Later",w:2},
+    {t:"box",l:"Themes & bets",w:1},
+    {t:"box",l:"Dependencies & risks",w:1}]},
+  { code:"One-Pager", title:"One-Pager / Product Brief", d:0,
+    purpose:"A condensed pitch to win alignment before a full PRD.",
+    meta:DM, s:[
+    {t:"box",l:"Problem",w:2},
+    {t:"box",l:"Proposal",w:2},
+    {t:"box",l:"Impact",w:2},
+    {t:"box",l:"The ask",w:1},
+    {t:"box",l:"Open questions",w:1}]},
+  { code:"RFP / RFI / RFQ", title:"Request for Proposal / Information / Quote", d:0,
+    purpose:"Procurement documents used to source vendors or solutions.",
+    meta:["Owner","Type","Due","Date"], s:[
+    {t:"box",l:"Background & need",w:2},
+    {t:"box",l:"Scope of work / questions",w:3},
+    {t:"box",l:"Requirements & evaluation criteria",w:2},
+    {t:"box",l:"Submission instructions & timeline",w:1},
+    {t:"box",l:"Budget / pricing",w:1}]},
+
+  // ---------- 2. Architecture & Design ----------
+  { code:"ADR", title:"Architecture Decision Record", d:1,
+    purpose:"A short, frozen record of one architectural decision.",
+    meta:["Author","ADR #","Status","Date"], s:[
+    {t:"box",l:"Context",h:"What forces this decision — constraints, requirements, deadlines.",w:2},
+    {t:"box",l:"Options considered",w:2},
+    {t:"box",l:"Decision",w:2},
+    {t:"box",l:"Consequences",h:"What becomes easier, what becomes harder.",w:2},
+    {t:"box",l:"Supersedes / related",w:1}]},
+  { code:"RFC", title:"Request for Comments", d:1,
+    purpose:"A proposal circulated for feedback before a significant change.",
+    meta:["Author","Status","Comments due","Date"], s:[
+    {t:"box",l:"Problem & motivation",w:2},
+    {t:"box",l:"Proposal",w:3},
+    {t:"box",l:"Alternatives",w:2},
+    {t:"box",l:"Impact & migration",w:1},
+    {t:"box",l:"Unresolved questions",w:1}]},
+  { code:"Design Doc", title:"Design Document / TDD", d:1,
+    purpose:"Explain how a system or feature will be built.",
+    meta:["Author","Reviewers","Status","Related"], s:[
+    {t:"box",l:"Summary",w:1},
+    {t:"box",l:"Background & requirements",w:1},
+    {t:"box",l:"Proposed design",w:3},
+    {t:"box",l:"Alternatives considered",w:2},
+    {t:"box",l:"Cross-cutting concerns",h:"Security, performance, failure modes.",w:1},
+    {t:"box",l:"Rollout plan",w:1}]},
+  { code:"HLD", title:"High-Level Design", d:1,
+    purpose:"System-level view: major components, services, and data flow.",
+    meta:["Architect","Reviewer","Status","Date"], s:[
+    {t:"box",l:"System context",w:2},
+    {t:"box",l:"Major components & services",w:3},
+    {t:"box",l:"Integrations & data flow",w:2},
+    {t:"box",l:"Key decisions",w:1},
+    {t:"box",l:"Risks",w:1}]},
+  { code:"LLD", title:"Low-Level Design", d:1,
+    purpose:"Component-level detail: classes, algorithms, schemas, signatures.",
+    meta:["Engineer","Reviewer","Status","Date"], s:[
+    {t:"box",l:"Module / component",w:1},
+    {t:"box",l:"Classes & data structures",w:2},
+    {t:"box",l:"Algorithms / logic",w:2},
+    {t:"box",l:"Schema & interfaces",w:2},
+    {t:"box",l:"Error handling",w:1}]},
+  { code:"SAD", title:"Software Architecture Document", d:1,
+    purpose:"A comprehensive, formal architecture description by views.",
+    meta:["Architect","Reviewer","Version","Date"], s:[
+    {t:"box",l:"Logical view",w:2},
+    {t:"box",l:"Process view",w:2},
+    {t:"box",l:"Deployment view",w:2},
+    {t:"box",l:"Data view",w:1},
+    {t:"box",l:"Architectural decisions",w:1}]},
+  { code:"C4", title:"C4 Model Diagrams", d:1,
+    purpose:"Architecture at four zoom levels: context, container, component, code.",
+    meta:["Author","Level","Status","Date"], s:[
+    {t:"draw",l:"Level 1 \u2014 System context",w:2},
+    {t:"draw",l:"Level 2 \u2014 Containers",w:2},
+    {t:"draw",l:"Level 3 \u2014 Components",w:2},
+    {t:"box",l:"Notes & legend",w:1}]},
+  { code:"ERD", title:"Entity-Relationship Diagram", d:1,
+    purpose:"Model database entities, attributes, and relationships.",
+    meta:["Author","Database","Version","Date"], s:[
+    {t:"box",l:"Entities & attributes",w:2},
+    {t:"draw",l:"Diagram",w:3},
+    {t:"box",l:"Keys & constraints",w:1}]},
+  { code:"DFD", title:"Data Flow Diagram", d:1,
+    purpose:"Show how data moves: sources, processes, stores, and sinks.",
+    meta:["Author","System","Level","Date"], s:[
+    {t:"box",l:"External entities, processes & stores",w:2},
+    {t:"draw",l:"Diagram",w:3},
+    {t:"box",l:"Notes",w:1}]},
+  { code:"Sequence", title:"Sequence / Interaction Diagram", d:1,
+    purpose:"Show the messages exchanged between components over time.",
+    meta:["Author","Flow","Status","Date"], s:[
+    {t:"box",l:"Participants & scenario",w:1},
+    {t:"draw",l:"Diagram \u2014 messages over time",w:4},
+    {t:"box",l:"Notes & edge cases",w:1}]},
+  { code:"API Spec", title:"API Specification", d:1,
+    purpose:"A machine-readable contract: endpoints, payloads, types, errors.",
+    meta:["Owner","Version","Format","Date"], s:[
+    {t:"cols",l:"Endpoints",c:["Method","Path","Purpose"],w:3},
+    {t:"box",l:"Request & payload",w:2},
+    {t:"box",l:"Responses & status codes",w:2},
+    {t:"box",l:"Errors & auth",w:1}]},
+  { code:"ICD", title:"Interface Control Document", d:1,
+    purpose:"Formally specify the interface between two systems.",
+    meta:["Owner","Systems","Version","Date"], s:[
+    {t:"box",l:"Interface overview",w:1},
+    {t:"cols",l:"Data formats & fields",c:["Field","Type","Notes"],w:3},
+    {t:"box",l:"Protocol & timing",w:2},
+    {t:"box",l:"Error handling & versioning",w:1}]},
+  { code:"Threat Model", title:"Threat Model", d:1,
+    purpose:"Analyse the attack surface: assets, threats, mitigations.",
+    meta:["Owner","System","Methodology","Date"], s:[
+    {t:"box",l:"Assets & trust boundaries",w:2},
+    {t:"cols",l:"Threats",c:["Threat","Category","Likelihood"],w:3},
+    {t:"box",l:"Mitigations",w:2},
+    {t:"box",l:"Residual risk",w:1}]},
+  { code:"Data Dictionary", title:"Data Dictionary", d:1,
+    purpose:"Authoritative definitions of every field or column.",
+    meta:["Owner","Dataset","Version","Date"], s:[
+    {t:"cols",l:"Fields",c:["Field","Type","Meaning"],w:4},
+    {t:"box",l:"Valid values & constraints",w:1},
+    {t:"box",l:"Source, lineage & sensitivity",w:1}]},
+
+  // ---------- 3. Engineering & Code ----------
+  { code:"README", title:"README", d:2,
+    purpose:"The front door of a repository — the minimum viable documentation.",
+    meta:["Maintainer","Repo","Version","Date"], s:[
+    {t:"box",l:"What is this",w:1},
+    {t:"box",l:"Install",w:2},
+    {t:"box",l:"Usage / run",w:2},
+    {t:"box",l:"Configuration",w:1},
+    {t:"box",l:"Contributing & license",w:1}]},
+  { code:"CONTRIBUTING", title:"Contributing Guide", d:2,
+    purpose:"How to participate in a codebase.",
+    meta:["Maintainer","Repo","Status","Date"], s:[
+    {t:"box",l:"Getting started",w:1},
+    {t:"box",l:"Branching strategy",w:1},
+    {t:"box",l:"PR & review process",w:2},
+    {t:"box",l:"Coding standards",w:1},
+    {t:"box",l:"Code of conduct",w:1}]},
+  { code:"CHANGELOG", title:"Changelog", d:2,
+    purpose:"A chronological record of notable changes per release.",
+    meta:["Author","Version","Release date","Type"], s:[
+    {t:"box",l:"Added",w:1},
+    {t:"box",l:"Changed",w:1},
+    {t:"box",l:"Fixed",w:1},
+    {t:"box",l:"Deprecated / removed",w:1},
+    {t:"box",l:"Breaking changes",w:1}]},
+  { code:"Style Guide", title:"Coding Standards / Style Guide", d:2,
+    purpose:"Team conventions for naming, formatting, and patterns.",
+    meta:["Owner","Language","Version","Date"], s:[
+    {t:"box",l:"Naming conventions",w:1},
+    {t:"box",l:"Formatting",w:1},
+    {t:"box",l:"Patterns to use",w:1},
+    {t:"box",l:"Anti-patterns to avoid",w:1},
+    {t:"box",l:"Tooling & linters",w:1}]},
+  { code:"API Reference", title:"API Reference Documentation", d:2,
+    purpose:"Developer-facing docs for every endpoint or method.",
+    meta:["Owner","Endpoint","Version","Date"], s:[
+    {t:"box",l:"Endpoint & method",w:1},
+    {t:"cols",l:"Parameters",c:["Name","Type","Required"],w:2},
+    {t:"box",l:"Responses & errors",w:2},
+    {t:"box",l:"Example",w:2}]},
+  { code:"Docstrings", title:"Inline Documentation / Docstrings", d:2,
+    purpose:"Documentation embedded directly in source code.",
+    meta:["Author","Module","Language","Date"], s:[
+    {t:"box",l:"Function / class & purpose",w:2},
+    {t:"cols",l:"Parameters",c:["Name","Type","Description"],w:3},
+    {t:"box",l:"Returns & throws",w:1},
+    {t:"box",l:"Example / gotchas",w:1}]},
+  { code:"Integration Guide", title:"SDK / Integration Guide", d:2,
+    purpose:"Step-by-step instructions for integrating with a platform.",
+    meta:["Owner","Platform","Version","Date"], s:[
+    {t:"box",l:"Prerequisites",w:1},
+    {t:"box",l:"Authentication setup",w:2},
+    {t:"box",l:"Quickstart",w:2},
+    {t:"box",l:"Code samples",w:2},
+    {t:"box",l:"Troubleshooting",w:1}]},
+  { code:"Release Notes", title:"Release Notes", d:2,
+    purpose:"A curated, user-facing summary of what changed in a release.",
+    meta:["Owner","Version","Release date","Audience"], s:[
+    {t:"box",l:"Highlights",w:2},
+    {t:"box",l:"New features",w:2},
+    {t:"box",l:"Fixes",w:1},
+    {t:"box",l:"Breaking changes",w:1},
+    {t:"box",l:"Upgrade steps",w:1}]},
+  { code:"Migration Guide", title:"Migration Guide", d:2,
+    purpose:"Instructions for moving between major versions or platforms.",
+    meta:["Owner","From \u2192 To","Version","Date"], s:[
+    {t:"box",l:"Overview",w:1},
+    {t:"box",l:"Breaking changes",w:2},
+    {t:"box",l:"Deprecated features",w:1},
+    {t:"box",l:"Step-by-step migration",w:3},
+    {t:"box",l:"Rollback",w:1}]},
+  { code:"Onboarding", title:"Onboarding / Developer Setup", d:2,
+    purpose:"Everything a new engineer needs to become productive.",
+    meta:["Owner","Team","Role","Date"], s:[
+    {t:"check",l:"Accounts & access",items:["Email & SSO","Repo access","Cloud / infra","Ticketing","Comms channels"],w:2},
+    {t:"box",l:"Environment setup",w:2},
+    {t:"box",l:"Architecture orientation",w:2},
+    {t:"box",l:"Key contacts & first tasks",w:1}]},
+
+  // ---------- 4. Operations, SRE & Support ----------
+  { code:"Runbook", title:"Runbook", d:3,
+    purpose:"Step-by-step instructions for one operational procedure.",
+    meta:["Service","Owner","Last tested","Risk"], s:[
+    {t:"box",l:"When to use",h:"The exact symptom, trigger, or alert.",w:1},
+    {t:"box",l:"Prerequisites",w:1},
+    {t:"box",l:"Steps",w:3},
+    {t:"box",l:"Verification",w:1},
+    {t:"box",l:"Rollback & escalation",w:1}]},
+  { code:"Playbook", title:"Playbook", d:3,
+    purpose:"Decision-oriented guidance for a class of situations.",
+    meta:["Owner","Scenario","Status","Date"], s:[
+    {t:"box",l:"Situation class",w:1},
+    {t:"box",l:"Diagnosis branches",w:3},
+    {t:"box",l:"Decision criteria",w:2},
+    {t:"box",l:"Actions per branch",w:2},
+    {t:"box",l:"Escalation",w:1}]},
+  { code:"SOP", title:"Standard Operating Procedure", d:3,
+    purpose:"A formal, version-controlled procedure for a recurring process.",
+    meta:["Owner","Process","Version","Effective"], s:[
+    {t:"box",l:"Purpose & scope",w:1},
+    {t:"box",l:"Responsibilities",w:1},
+    {t:"box",l:"Procedure steps",w:3},
+    {t:"box",l:"Records & evidence",w:1},
+    {t:"cols",l:"Review & approval",c:["Name","Role","Date"],w:1}]},
+  { code:"Incident Report", title:"Incident Report", d:3,
+    purpose:"A real-time record of an incident: timeline, impact, status.",
+    meta:["Severity","Commander","Started","Status"], s:[
+    {t:"box",l:"Summary",w:1},
+    {t:"box",l:"Impact",w:1},
+    {t:"cols",l:"Timeline",c:["Time","Event"],w:3},
+    {t:"box",l:"Actions taken & current status",w:2}]},
+  { code:"Postmortem", title:"Postmortem / RCA", d:3,
+    purpose:"A blameless retrospective: what happened, why, and prevention.",
+    meta:["Severity","Author","Duration","Status"], s:[
+    {t:"box",l:"Summary & impact",w:1},
+    {t:"cols",l:"Timeline",c:["Time","Event"],w:2},
+    {t:"box",l:"Root cause",h:"5 Whys; name systems and processes, not people.",w:2},
+    {t:"cols",l:"Action items",c:["Action","Owner","Due"],w:2}]},
+  { code:"On-Call Guide", title:"On-Call Guide", d:3,
+    purpose:"Expectations and procedures for the on-call rotation.",
+    meta:["Team","Rotation","Owner","Date"], s:[
+    {t:"box",l:"Rotation & schedule",w:1},
+    {t:"box",l:"Severity definitions",w:2},
+    {t:"box",l:"Escalation paths",w:2},
+    {t:"box",l:"Tooling & access",w:1},
+    {t:"check",l:"Handoff checklist",items:["Open incidents reviewed","Pending alerts","Context & access confirmed"],w:1}]},
+  { code:"DR Plan", title:"Disaster Recovery Plan", d:3,
+    purpose:"How to restore systems after catastrophic failure.",
+    meta:["Owner","System","RTO / RPO","Date"], s:[
+    {t:"box",l:"Scope & objectives",w:1},
+    {t:"box",l:"Backup procedures",w:2},
+    {t:"box",l:"Failover steps",w:3},
+    {t:"box",l:"Contact tree & test schedule",w:1}]},
+  { code:"BCP", title:"Business Continuity Plan", d:3,
+    purpose:"How the organisation keeps operating during major disruption.",
+    meta:["Owner","Scope","Version","Date"], s:[
+    {t:"box",l:"Critical functions",w:2},
+    {t:"box",l:"Disruption scenarios",w:2},
+    {t:"box",l:"Continuity strategy",w:2},
+    {t:"box",l:"Roles, contacts & objectives",w:1}]},
+  { code:"SLA / SLO / SLI", title:"SLA / SLO / SLI Documentation", d:3,
+    purpose:"Agree on what \u201creliable\u201d means and how it is measured.",
+    meta:["Owner","Service","Period","Date"], s:[
+    {t:"box",l:"SLA \u2014 contractual promise",w:1},
+    {t:"box",l:"SLO \u2014 internal objective",w:1},
+    {t:"box",l:"SLI \u2014 measured indicator",w:1},
+    {t:"box",l:"Error budget & policy",w:2},
+    {t:"box",l:"Reporting",w:1}]},
+  { code:"Capacity Plan", title:"Capacity Plan", d:3,
+    purpose:"Forecast resource needs against expected growth.",
+    meta:["Owner","System","Horizon","Date"], s:[
+    {t:"box",l:"Current usage",w:1},
+    {t:"box",l:"Growth forecast",w:2},
+    {t:"cols",l:"Resource needs",c:["Resource","Current","Forecast"],w:3},
+    {t:"box",l:"Risks",w:1}]},
+  { code:"Change Calendar", title:"Maintenance / Change Calendar", d:3,
+    purpose:"Scheduled maintenance windows, freeze periods, and procedures.",
+    meta:["Owner","Window","Status","Date"], s:[
+    {t:"cols",l:"Scheduled windows",c:["Date","Window","Change"],w:3},
+    {t:"box",l:"Freeze periods",w:1},
+    {t:"box",l:"Change procedure & notifications",w:2}]},
+  { code:"KB Article", title:"Knowledge Base Article", d:3,
+    purpose:"Searchable support content: how-to, troubleshooting, known issues.",
+    meta:["Author","Audience","Status","Date"], s:[
+    {t:"box",l:"Problem / question",w:1},
+    {t:"box",l:"Environment",w:1},
+    {t:"box",l:"Solution / steps",w:3},
+    {t:"box",l:"Workaround & related articles",w:1}]},
+
+  // ---------- 5. Project & Process ----------
+  { code:"Project Charter", title:"Project Charter", d:4,
+    purpose:"Authorises a project — its birth certificate.",
+    meta:["Sponsor","PM","Status","Date"], s:[
+    {t:"box",l:"Objectives",w:2},
+    {t:"box",l:"Scope (in / out)",w:2},
+    {t:"box",l:"Stakeholders",w:1},
+    {t:"box",l:"Budget & timeline",w:1},
+    {t:"box",l:"Success criteria",w:1}]},
+  { code:"SOW", title:"Statement of Work", d:4,
+    purpose:"Contractual definition of deliverables, timeline, acceptance.",
+    meta:["Vendor","Owner","Status","Date"], s:[
+    {t:"box",l:"Deliverables",w:3},
+    {t:"cols",l:"Timeline & milestones",c:["Milestone","Date"],w:2},
+    {t:"box",l:"Acceptance criteria",w:2},
+    {t:"box",l:"Pricing & terms",w:1}]},
+  { code:"WBS", title:"Work Breakdown Structure", d:4,
+    purpose:"Hierarchical decomposition of scope into work packages.",
+    meta:["PM","Project","Version","Date"], s:[
+    {t:"box",l:"Phases / deliverables",w:2},
+    {t:"cols",l:"Work packages",c:["ID","Work package","Owner"],w:4},
+    {t:"box",l:"Dependencies & estimates",w:1}]},
+  { code:"RACI", title:"RACI Matrix", d:4,
+    purpose:"Maps who is Responsible, Accountable, Consulted, Informed.",
+    meta:["Owner","Project","Version","Date"], s:[
+    {t:"box",l:"Roles",w:1},
+    {t:"cols",l:"Matrix",c:["Task / Decision","R","A","C","I"],w:5}]},
+  { code:"Risk Register", title:"Risk Register", d:4,
+    purpose:"A living log of identified risks and their mitigations.",
+    meta:["Owner","Project","Version","Date"], s:[
+    {t:"cols",l:"Risks",c:["Risk","Likelihood","Impact","Mitigation","Owner"],w:6}]},
+  { code:"Change Request", title:"Change Request", d:4,
+    purpose:"A formal proposal to modify scope, schedule, or production.",
+    meta:["Requester","CR #","Status","Date"], s:[
+    {t:"box",l:"Change description",w:2},
+    {t:"box",l:"Reason / business case",w:1},
+    {t:"box",l:"Impact analysis",w:2},
+    {t:"box",l:"Rollback plan",w:1},
+    {t:"cols",l:"CAB approval",c:["Name","Decision","Date"],w:1}]},
+  { code:"Status Report", title:"Status Report", d:4,
+    purpose:"A periodic summary of project health.",
+    meta:["Owner","Period","RAG","Date"], s:[
+    {t:"box",l:"Summary & RAG status",w:1},
+    {t:"box",l:"Progress this period",w:2},
+    {t:"box",l:"Risks & issues",w:2},
+    {t:"box",l:"Decisions needed & next period",w:1}]},
+  { code:"Retrospective", title:"Retrospective", d:4,
+    purpose:"A team reflection on what to keep, drop, and change.",
+    meta:["Team","Sprint","Facilitator","Date"], s:[
+    {t:"box",l:"What went well",w:2},
+    {t:"box",l:"What didn\u2019t",w:2},
+    {t:"cols",l:"Action items",c:["Action","Owner","Due"],w:2}]},
+  { code:"Decision Log", title:"Meeting Minutes & Decision Log", d:4,
+    purpose:"A record of discussion, decisions, and action items.",
+    meta:["Recorder","Meeting","Attendees","Date"], s:[
+    {t:"box",l:"Agenda",w:1},
+    {t:"box",l:"Discussion",w:2},
+    {t:"box",l:"Decisions",w:2},
+    {t:"cols",l:"Action items",c:["Action","Owner","Due"],w:2}]},
+
+  // ---------- 6. Quality & Testing ----------
+  { code:"Test Strategy", title:"Test Strategy", d:5,
+    purpose:"The high-level approach to quality for a product or org.",
+    meta:["Owner","Product","Version","Date"], s:[
+    {t:"box",l:"Quality objectives",w:1},
+    {t:"box",l:"Test levels & types",w:2},
+    {t:"box",l:"Environments",w:1},
+    {t:"box",l:"Automation philosophy",w:1},
+    {t:"box",l:"Tooling",w:1}]},
+  { code:"Test Plan", title:"Test Plan", d:5,
+    purpose:"Project-specific testing scope and schedule.",
+    meta:["Owner","Project","Status","Date"], s:[
+    {t:"box",l:"Scope (in / out)",w:2},
+    {t:"box",l:"Approach",w:1},
+    {t:"box",l:"Entry / exit criteria",w:2},
+    {t:"box",l:"Schedule & resources",w:1},
+    {t:"box",l:"Risk areas",w:1}]},
+  { code:"Test Cases", title:"Test Cases / Scripts", d:5,
+    purpose:"Individual, repeatable test specifications.",
+    meta:["Author","Feature","Version","Date"], s:[
+    {t:"cols",l:"Test cases",c:["ID","Steps","Expected result"],w:5},
+    {t:"box",l:"Preconditions & test data",w:1}]},
+  { code:"RTM", title:"Requirements Traceability Matrix", d:5,
+    purpose:"Map requirements through design to the tests that verify them.",
+    meta:["Owner","Project","Version","Date"], s:[
+    {t:"cols",l:"Traceability",c:["Req ID","Design","Test case","Status"],w:6}]},
+  { code:"UAT Plan", title:"User Acceptance Testing Plan", d:5,
+    purpose:"How business users validate the system before go-live.",
+    meta:["Owner","System","Status","Date"], s:[
+    {t:"box",l:"Scope & objectives",w:1},
+    {t:"box",l:"Participants",w:1},
+    {t:"box",l:"Test scenarios",w:3},
+    {t:"cols",l:"Sign-off",c:["Name","Role","Date"],w:1}]},
+  { code:"Bug Report", title:"Bug / Defect Report", d:5,
+    purpose:"A structured record of a defect.",
+    meta:["Reporter","Severity","Environment","Date"], s:[
+    {t:"box",l:"Summary",w:1},
+    {t:"box",l:"Steps to reproduce",w:2},
+    {t:"box",l:"Expected vs actual",w:2},
+    {t:"box",l:"Priority & notes",w:1}]},
+  { code:"IQ / OQ / PQ", title:"Validation (IQ / OQ / PQ)", d:5,
+    purpose:"Formal evidence a system was installed and performs as specified.",
+    meta:["Owner","System","Protocol","Date"], s:[
+    {t:"box",l:"Installation Qualification (IQ)",w:2},
+    {t:"box",l:"Operational Qualification (OQ)",w:2},
+    {t:"box",l:"Performance Qualification (PQ)",w:2},
+    {t:"cols",l:"Approval",c:["Name","Role","Date"],w:1}]},
+
+  // ---------- 7. Security, Compliance & Governance ----------
+  { code:"Security Policy", title:"Security Policy", d:6,
+    purpose:"Organisational rules for use, access, data, and response.",
+    meta:["Owner","Scope","Version","Effective"], s:[
+    {t:"box",l:"Acceptable use",w:1},
+    {t:"box",l:"Access control",w:1},
+    {t:"box",l:"Data handling",w:1},
+    {t:"box",l:"Incident response",w:1},
+    {t:"box",l:"Enforcement & review",w:1}]},
+  { code:"Data Governance", title:"Data Governance Documentation", d:6,
+    purpose:"Defines data ownership, classification, quality, retention.",
+    meta:["Owner","Domain","Version","Date"], s:[
+    {t:"box",l:"Ownership & stewardship",w:1},
+    {t:"box",l:"Classification",w:1},
+    {t:"box",l:"Quality standards",w:1},
+    {t:"box",l:"Retention",w:1},
+    {t:"box",l:"Lineage",w:1}]},
+  { code:"Access Control", title:"Access Control / RLS Documentation", d:6,
+    purpose:"Who can see what and why.",
+    meta:["Owner","System","Version","Date"], s:[
+    {t:"box",l:"Roles & definitions",w:2},
+    {t:"box",l:"Group mappings",w:1},
+    {t:"box",l:"Row-level security rules",w:2},
+    {t:"box",l:"Approval process & review cadence",w:1}]},
+  { code:"Audit Trail", title:"Audit Trail / Evidence Documentation", d:6,
+    purpose:"Records maintained to demonstrate compliance during audits.",
+    meta:["Owner","Framework","Period","Date"], s:[
+    {t:"box",l:"Controls in scope",w:1},
+    {t:"cols",l:"Evidence",c:["Control","Evidence","Location"],w:3},
+    {t:"box",l:"Access reviews & change logs",w:1},
+    {t:"box",l:"Gaps",w:1}]},
+  { code:"DPIA", title:"Data Protection Impact Assessment", d:6,
+    purpose:"Assess the privacy risk of a new processing activity.",
+    meta:["Owner","Activity","Status","Date"], s:[
+    {t:"box",l:"Processing activity",w:1},
+    {t:"box",l:"Data & subjects",w:1},
+    {t:"box",l:"Necessity & proportionality",w:1},
+    {t:"box",l:"Privacy risks",w:2},
+    {t:"box",l:"Mitigations",w:1}]},
+  { code:"Compliance Matrix", title:"Compliance Matrix / Control Mapping", d:6,
+    purpose:"Map regulatory requirements to controls and their evidence.",
+    meta:["Owner","Framework","Version","Date"], s:[
+    {t:"cols",l:"Control mapping",c:["Requirement","Control","Evidence","Status"],w:6}]},
+  { code:"Vendor Risk", title:"Vendor / Third-Party Risk Assessment", d:6,
+    purpose:"Due diligence on a vendor's security and compliance posture.",
+    meta:["Owner","Vendor","Status","Date"], s:[
+    {t:"box",l:"Vendor overview",w:1},
+    {t:"box",l:"Security posture",w:2},
+    {t:"box",l:"Compliance & certifications",w:1},
+    {t:"box",l:"Data access & risk",w:1},
+    {t:"box",l:"Decision",w:1}]},
+
+  // ---------- 8. End-User & Training ----------
+  { code:"User Guide", title:"User Guide / Manual", d:7,
+    purpose:"Comprehensive end-user instructions, organised by task.",
+    meta:["Owner","Product","Version","Date"], s:[
+    {t:"box",l:"Overview",w:1},
+    {t:"box",l:"Getting started",w:2},
+    {t:"box",l:"Features & tasks",w:3},
+    {t:"box",l:"Troubleshooting & reference",w:1}]},
+  { code:"Quick Start", title:"Quick Start Guide", d:7,
+    purpose:"The minimal path from zero to first success.",
+    meta:["Owner","Product","Version","Date"], s:[
+    {t:"box",l:"Prerequisites",w:1},
+    {t:"box",l:"Steps to first success",w:4},
+    {t:"box",l:"Verify it works",w:1},
+    {t:"box",l:"Next steps",w:1}]},
+  { code:"FAQ", title:"Frequently Asked Questions", d:7,
+    purpose:"Curated answers to common questions.",
+    meta:["Owner","Product","Status","Date"], s:[
+    {t:"cols",l:"Questions & answers",c:["Question","Answer"],w:6}]},
+  { code:"Training", title:"Training Materials", d:7,
+    purpose:"Structured learning content and assessment.",
+    meta:["Owner","Audience","Version","Date"], s:[
+    {t:"box",l:"Learning objectives",w:1},
+    {t:"box",l:"Modules / outline",w:3},
+    {t:"box",l:"Exercises",w:1},
+    {t:"box",l:"Assessment & resources",w:1}]},
+  { code:"UX Copy", title:"Tooltips / In-App Help / UX Copy", d:7,
+    purpose:"The microcopy embedded in the product interface.",
+    meta:["Owner","Surface","Status","Date"], s:[
+    {t:"cols",l:"Copy",c:["Element","Copy","Notes"],w:5},
+    {t:"box",l:"Voice & tone",w:1}]},
+
+  // ---------- Governance records (feed the paginated Governance Reports) ----------
+  { code:"CDOC", title:"Controlled Document Record", d:6,
+    purpose:"Register a controlled document and its governance metadata, RACI, version history, and attestations — the record behind the Controlled Document Register and Dossier.",
+    meta:["Doc ID","Document title","Document type","Department","Lifecycle phase","Status","Version","Owner","Approver","Review cycle","Next review","Classification"], s:[
+    {t:"box",l:"Purpose & scope",h:"What this document governs and where it applies.",w:1},
+    {t:"cols",l:"RACI assignments",h:"Responsible / Accountable / Consulted / Informed by role.",c:["Role","Name","Responsibility","Notes"],w:2},
+    {t:"cols",l:"Version history",h:"Every version, its change class, author, and the governance CR that drove it.",c:["Version","Status","Change summary","Class","Author","Effective","Linked CR"],w:3},
+    {t:"cols",l:"Approval attestations",h:"Recorded attestations — always labelled non\u201321 CFR Part 11.",c:["Name","Role","Attestation kind","Date"],w:2}]},
+  { code:"BPG", title:"Baseline & Phase-Gate Record", d:6,
+    purpose:"Record a project's immutable baselines and its phase-gate transition log — the record behind the Baseline & Phase-Gate Register.",
+    meta:["Project code","Project name","Baselined by","Date"], s:[
+    {t:"cols",l:"Baselines",h:"Versioned, immutable baselines for schedule, budget, and scope.",c:["Type","Version","Status","Change summary","Baselined by","Date","Budget","Activities"],w:3},
+    {t:"cols",l:"Phase-gate transitions",h:"Each gate decision between lifecycle phases.",c:["From phase","To phase","Gate decision","Approved by","Date","Notes"],w:2}]}
+];
