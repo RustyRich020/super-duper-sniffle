@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#222226; --muted:#6A6A6F; --faint:#9C9C98;
+    --page:#FBFBF9; --paper:#ECECE8; --soft:#F2F2EF; --softer:#F7F7F4;
+    --rule:#E3E3DE; --line:#D4D4CF; --field:#FFFFFF;
+    --accent:#B5862A; --accent2:#E6C658; --accentsoft:#F0E4BC; --accentbg:#FAF4E2; --sidebar:#1E1E21;
+    --green:#5FA463; --amber:#C9962B; --red:#C2603F;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{ background:var(--paper); color:var(--ink); font-family:'IBM Plex Sans',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  .doc{ max-width:1200px; margin:0 auto; padding:46px 40px 90px; }
+
+  /* cover */
+  .cov{ background:var(--sidebar); color:#ECECE6; border-radius:18px; padding:40px 44px; position:relative; overflow:hidden; margin-bottom:30px; }
+  .cov::before{ content:""; position:absolute; inset:14px; border:1px solid rgba(230,198,88,.18); border-radius:10px; pointer-events:none; }
+  .cov .brand{ display:flex; align-items:center; gap:12px; position:relative; z-index:1; }
+  .cov .brand img{ height:38px; filter:brightness(0) invert(1); opacity:.95; }
+  .cov .brand span{ font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:#D9D9D0; }
+  .cov h1{ font-family:'Spectral'; font-weight:500; font-size:42px; line-height:1.05; letter-spacing:-.6px; margin:26px 0 0; max-width:20ch; position:relative; z-index:1; }
+  .cov h1 em{ font-style:italic; color:var(--accentsoft); }
+  .cov p{ font-family:'Spectral'; font-size:15px; line-height:1.55; color:#CFCFC8; max-width:64ch; margin:16px 0 0; position:relative; z-index:1; }
+  .cov .kick{ font-family:'IBM Plex Mono'; font-size:10.5px; letter-spacing:.32em; text-transform:uppercase; color:var(--accent2); margin-top:24px; position:relative; z-index:1; }
+
+  section{ margin-bottom:42px; }
+  .sec-num{ font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--accent); }
+  .sec-h{ font-family:'Spectral'; font-weight:600; font-size:27px; letter-spacing:-.4px; margin:5px 0 4px; border-bottom:2px solid var(--ink); padding-bottom:12px; }
+  .sec-sub{ font-family:'Spectral'; font-style:italic; font-size:14px; color:var(--muted); margin:10px 0 20px; max-width:74ch; }
+
+  /* personas */
+  .pgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .pcard{ border:1px solid var(--rule); border-radius:13px; background:var(--page); padding:16px 16px 14px; position:relative; overflow:hidden; }
+  .pcard::before{ content:""; position:absolute; left:0; top:0; height:3px; width:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); }
+  .pcard .pi{ width:34px; height:34px; border-radius:9px; background:var(--ink); color:var(--accent2); font-family:'Spectral'; font-weight:600; font-size:14px; display:flex; align-items:center; justify-content:center; letter-spacing:.5px; }
+  .pcard h3{ font-family:'Spectral'; font-weight:600; font-size:16px; margin:11px 0 2px; }
+  .pcard .lives{ font-family:'IBM Plex Mono'; font-size:9px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); }
+  .pcard .docs{ font-size:11.5px; line-height:1.5; color:var(--ink); margin:9px 0 7px; }
+  .pcard .need{ font-size:11.5px; line-height:1.45; color:var(--muted); font-style:italic; border-top:1px solid var(--rule); padding-top:8px; }
+
+  /* swimlane + raci shared grid bits */
+  .grid-card{ border:1px solid var(--rule); border-radius:12px; overflow:hidden; background:var(--page); }
+  .lane{ display:grid; grid-template-columns:140px repeat(5,1fr); }
+  .lane > div{ padding:9px 11px; border-right:1px solid var(--rule); border-bottom:1px solid var(--rule); min-height:54px; }
+  .lane > div:nth-child(6n){ border-right:none; }
+  .lane .lh{ background:var(--ink); color:var(--page); font-family:'IBM Plex Mono'; font-size:9px; letter-spacing:.08em; text-transform:uppercase; display:flex; align-items:center; min-height:38px; }
+  .lane .rl{ background:var(--softer); font-family:'Spectral'; font-weight:600; font-size:12.5px; display:flex; align-items:center; }
+  .lane .ph{ display:flex; flex-wrap:wrap; align-content:flex-start; }
+  .chip{ display:inline-block; font-family:'IBM Plex Sans'; font-size:10px; background:var(--accentbg); border:1px solid var(--accentsoft); color:var(--ink); border-radius:5px; padding:2px 6px; margin:2px 3px 1px 0; line-height:1.35; }
+  .chip.ghost{ background:none; border:1px dashed var(--line); color:var(--faint); }
+  .emp{ color:var(--faint); font-family:'IBM Plex Mono'; font-size:13px; align-self:center; }
+
+  /* blueprint */
+  .bp{ display:grid; grid-template-columns:124px repeat(6,1fr); }
+  .bp > div{ padding:10px 11px; border-right:1px solid var(--rule); border-bottom:1px solid var(--rule); }
+  .bp > div:nth-child(7n){ border-right:none; }
+  .bp .stage{ background:var(--ink); color:var(--page); font-family:'Spectral'; font-weight:600; font-size:12.5px; }
+  .bp .stage .n{ font-family:'IBM Plex Mono'; font-size:8.5px; color:var(--accent2); display:block; margin-bottom:2px; }
+  .bp .laneL{ background:var(--softer); font-family:'IBM Plex Mono'; font-size:8.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; }
+  .bp .c{ font-size:11px; line-height:1.4; color:var(--ink); }
+  .bp .c.back{ color:var(--muted); font-family:'IBM Plex Mono'; font-size:9.5px; }
+  .bp .c.data{ font-family:'IBM Plex Mono'; font-size:9.5px; color:var(--accent); }
+
+  /* lifecycle ring */
+  .ring-wrap{ display:grid; grid-template-columns:400px 1fr; gap:28px; align-items:center; }
+  .ring{ position:relative; width:380px; height:380px; margin:0 auto; }
+  .ring .o-circle{ position:absolute; inset:30px; border:2px dashed var(--line); border-radius:50%; }
+  .ring .i-circle{ position:absolute; left:50%; top:50%; width:170px; height:170px; transform:translate(-50%,-50%); border:1.5px solid var(--accentsoft); border-radius:50%; background:var(--accentbg); }
+  .ring .ctr{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); text-align:center; width:150px; z-index:3; }
+  .ring .ctr .t{ font-family:'IBM Plex Mono'; font-size:8.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); }
+  .ring .ctr .b{ font-family:'Spectral'; font-weight:600; font-size:13px; margin-top:2px; line-height:1.2; }
+  .node{ position:absolute; transform:translate(-50%,-50%); z-index:2; }
+  .pnode{ background:var(--ink); color:var(--page); border-radius:9px; padding:6px 9px; text-align:center; min-width:78px; }
+  .pnode .s{ font-family:'IBM Plex Mono'; font-size:8px; color:var(--accent2); }
+  .pnode .l{ font-family:'Spectral'; font-weight:600; font-size:11px; line-height:1.1; margin-top:1px; }
+  .inode{ font-family:'IBM Plex Mono'; font-size:9px; color:var(--ink); background:var(--page); border:1px solid var(--accentsoft); border-radius:6px; padding:3px 6px; white-space:nowrap; }
+  .ring-legend p{ font-size:13px; line-height:1.6; color:var(--ink); margin:0 0 12px; }
+  .ring-legend .lg{ display:flex; align-items:center; gap:9px; margin-bottom:8px; font-size:12px; color:var(--muted); }
+  .ring-legend .sw{ width:16px; height:16px; border-radius:5px; flex:none; }
+  .ring-legend b{ color:var(--ink); font-weight:600; }
+
+  /* RACI */
+  .raci{ display:grid; grid-template-columns:248px repeat(7,1fr); }
+  .raci > div{ padding:8px 9px; border-right:1px solid var(--rule); border-bottom:1px solid var(--rule); display:flex; align-items:center; }
+  .raci > div:nth-child(8n){ border-right:none; }
+  .raci .hh{ background:var(--ink); color:var(--page); font-family:'IBM Plex Mono'; font-size:9px; letter-spacing:.04em; text-transform:uppercase; justify-content:center; min-height:40px; text-align:center; }
+  .raci .hh.first{ justify-content:flex-start; }
+  .raci .act{ background:var(--softer); font-size:12px; font-weight:500; }
+  .raci .cell{ justify-content:center; }
+  .rb{ font-family:'IBM Plex Mono'; font-size:10.5px; font-weight:500; border-radius:5px; padding:3px 7px; letter-spacing:.04em; }
+  .rb.A{ background:var(--accent); color:#fff; }
+  .rb.R{ background:var(--ink); color:var(--page); }
+  .rb.C{ background:var(--soft); color:var(--ink); border:1px solid var(--line); }
+  .rb.I{ background:none; color:var(--faint); border:1px solid var(--line); }
+  .raci-legend{ display:flex; gap:18px; flex-wrap:wrap; margin-top:14px; font-size:12px; color:var(--muted); }
+  .raci-legend span b{ color:var(--ink); }
+
+  @media (max-width:900px){ .pgrid{ grid-template-columns:repeat(2,1fr); } .ring-wrap{ grid-template-columns:1fr; } }
+  @media print{
+    body{ background:none; }
+    .doc{ max-width:none; padding:0; }
+    section{ break-inside:avoid; page-break-inside:avoid; }
+    .cov{ break-after:avoid; }
+  }
+</style>
+</helmet>
+<div class="doc">
+
+  <div class="cov">
+    <div class="brand"><img src="assets/qq-logo.png" alt="QQ Studios"><span>QQ-Studios</span></div>
+    <h1>The Operating Model — <em>people, journeys & lifecycle</em></h1>
+    <p>How the Forms Workspace and the PMBOK Planner are used by real roles: who does what, the path an end user walks, the service behind it, the project–product lifecycle, and the RACI that holds it together.</p>
+    <div class="kick">Personas · Journey · Service Blueprint · Lifecycle · RACI</div>
+  </div>
+
+  <!-- 1. PERSONAS -->
+  <section>
+    <div class="sec-num">01</div>
+    <h2 class="sec-h">The Personas</h2>
+    <p class="sec-sub">Eight roles, each anchored to a surface — the Landing (front door), the Forms Workspace (the work), or the Planner (the roll-up).</p>
+    <div class="pgrid">
+      <div class="pcard"><div class="pi">SP</div><h3>Sponsor / Exec</h3><div class="lives">Lives in · Planner</div><div class="docs">Charter, Business Case</div><div class="need">"Is this on track, on budget, worth it?" — reads &amp; approves.</div></div>
+      <div class="pcard"><div class="pi">PM</div><h3>Project Manager</h3><div class="lives">Lives in · Planner (all 8)</div><div class="docs">Charter, WBS, Schedule, Risk, Status, Change, RACI</div><div class="need">Orchestrates everything; the only role in every planner page.</div></div>
+      <div class="pcard"><div class="pi">PD</div><h3>Product Manager</h3><div class="lives">Lives in · Forms · Requirements</div><div class="docs">PRD, Vision, Roadmap, One-Pager, Stories</div><div class="need">Turns intent into requirements the team can build.</div></div>
+      <div class="pcard"><div class="pi">EN</div><h3>Engineer / Tech Lead</h3><div class="lives">Lives in · Forms · Architecture</div><div class="docs">ADR, Design Doc, README, API Spec, Runbook</div><div class="need">Records how &amp; why; keeps living docs alive.</div></div>
+      <div class="pcard"><div class="pi">QA</div><h3>QA / Test Lead</h3><div class="lives">Lives in · Forms · Quality</div><div class="docs">Test Strategy, Test Cases, UAT, Bug Report</div><div class="need">Owns the "done" bar.</div></div>
+      <div class="pcard"><div class="pi">OP</div><h3>SRE / Ops</h3><div class="lives">Lives in · Forms · Operations</div><div class="docs">Runbook, Incident, Postmortem, On-Call</div><div class="need">Operates it when it matters.</div></div>
+      <div class="pcard"><div class="pi">CO</div><h3>Compliance / Auditor</h3><div class="lives">Lives in · Forms + Doc-Gov</div><div class="docs">SOP, Audit Trail, DPIA, Compliance Matrix</div><div class="need">Evidence, control mapping, signoffs.</div></div>
+      <div class="pcard"><div class="pi">ST</div><h3>Stakeholder / User</h3><div class="lives">Lives in · Landing → one form</div><div class="docs">Intake, requirements input</div><div class="need">Contributes once, then watches the dashboards.</div></div>
+    </div>
+  </section>
+
+  <!-- 2. SWIMLANE -->
+  <section>
+    <div class="sec-num">02</div>
+    <h2 class="sec-h">Persona × Lifecycle Swimlane</h2>
+    <p class="sec-sub">What each role produces as a project moves through the five PMBOK phases. Each chip is a document type in the Workspace; the exit artifact of each phase is what unlocks the next.</p>
+    <div class="grid-card">
+      <div class="lane">
+        <div class="lh"></div>
+        <div class="lh">Initiation</div><div class="lh">Planning</div><div class="lh">Execution</div><div class="lh">Monitoring &amp; Control</div><div class="lh">Closing</div>
+
+        <div class="rl">Project Manager</div>
+        <div class="ph"><span class="chip">Charter</span><span class="chip">Stakeholder Register</span></div>
+        <div class="ph"><span class="chip">WBS</span><span class="chip">Schedule</span><span class="chip">Risk Register</span><span class="chip">RACI</span><span class="chip">Cost Estimate</span></div>
+        <div class="ph"><span class="chip">Change Log</span></div>
+        <div class="ph"><span class="chip">Status Report</span></div>
+        <div class="ph"><span class="chip">Lessons &amp; Closure</span></div>
+
+        <div class="rl">Product</div>
+        <div class="ph"><span class="chip">Vision</span><span class="chip">One-Pager</span></div>
+        <div class="ph"><span class="chip">PRD</span><span class="chip">Roadmap</span></div>
+        <div class="ph"><span class="chip">Stories</span><span class="chip">AC / DoD</span></div>
+        <div class="ph"><span class="chip ghost">roadmap updates</span></div>
+        <div class="ph"><span class="emp">·</span></div>
+
+        <div class="rl">Engineering</div>
+        <div class="ph"><span class="emp">·</span></div>
+        <div class="ph"><span class="chip">Design Doc</span><span class="chip">HLD</span></div>
+        <div class="ph"><span class="chip">ADR</span><span class="chip">LLD</span><span class="chip">README</span><span class="chip">API Spec</span></div>
+        <div class="ph"><span class="chip">Runbook</span></div>
+        <div class="ph"><span class="chip ghost">migration guide</span></div>
+
+        <div class="rl">QA</div>
+        <div class="ph"><span class="emp">·</span></div>
+        <div class="ph"><span class="chip">Test Strategy</span><span class="chip">Test Plan</span></div>
+        <div class="ph"><span class="chip">Test Cases</span></div>
+        <div class="ph"><span class="chip">Bug Reports</span><span class="chip">UAT</span></div>
+        <div class="ph"><span class="chip">RTM</span></div>
+
+        <div class="rl">SRE / Ops</div>
+        <div class="ph"><span class="emp">·</span></div>
+        <div class="ph"><span class="chip ghost">SLO / SLA</span></div>
+        <div class="ph"><span class="chip">Runbook</span><span class="chip">On-Call</span></div>
+        <div class="ph"><span class="chip">Incident Report</span></div>
+        <div class="ph"><span class="chip">Postmortem</span></div>
+
+        <div class="rl">Compliance</div>
+        <div class="ph"><span class="emp">·</span></div>
+        <div class="ph"><span class="chip">Quality Plan</span><span class="chip">DPIA</span></div>
+        <div class="ph"><span class="chip">SOPs</span><span class="chip">Access Control</span></div>
+        <div class="ph"><span class="chip">Audit Trail</span></div>
+        <div class="ph"><span class="chip">Compliance Matrix</span></div>
+
+        <div class="rl">Sponsor</div>
+        <div class="ph"><span class="chip">Approves Charter</span></div>
+        <div class="ph"><span class="chip ghost">approves baseline</span></div>
+        <div class="ph"><span class="emp">·</span></div>
+        <div class="ph"><span class="chip">Reads Portfolio / Cost</span></div>
+        <div class="ph"><span class="chip">Signs off</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. SERVICE BLUEPRINT -->
+  <section>
+    <div class="sec-num">03</div>
+    <h2 class="sec-h">Service Blueprint — the end-user loop</h2>
+    <p class="sec-sub">One pass through the system, from front door to dashboard. Front-stage is what the user sees; back-stage is what Supabase and the app do; the data line is what persists and rolls up.</p>
+    <div class="grid-card">
+      <div class="bp">
+        <div class="laneL"></div>
+        <div class="stage"><span class="n">01</span>Discover</div>
+        <div class="stage"><span class="n">02</span>Enter &amp; Find</div>
+        <div class="stage"><span class="n">03</span>Fill</div>
+        <div class="stage"><span class="n">04</span>Tag &amp; Save</div>
+        <div class="stage"><span class="n">05</span>Roll-up</div>
+        <div class="stage"><span class="n">06</span>Review &amp; Iterate</div>
+
+        <div class="laneL">User action</div>
+        <div class="c">Lands, reads the value prop</div>
+        <div class="c">Signs in, browses the gallery</div>
+        <div class="c">Completes a form with guided examples</div>
+        <div class="c">Picks a project, edits autosave</div>
+        <div class="c">Opens the Planner</div>
+        <div class="c">Team reads health, decides, repeats</div>
+
+        <div class="laneL">Front-stage</div>
+        <div class="c">Landing page</div>
+        <div class="c">Auth + Gallery</div>
+        <div class="c">Interactive form</div>
+        <div class="c">Submission &amp; Project picker</div>
+        <div class="c">8 dashboard pages</div>
+        <div class="c">Status / Change / Risk views</div>
+
+        <div class="laneL">Back-stage</div>
+        <div class="c back">Default DB connect</div>
+        <div class="c back">Supabase Auth · session</div>
+        <div class="c back">Per-keystroke upsert</div>
+        <div class="c back">RLS · relational + child tables</div>
+        <div class="c back">Aggregation queries</div>
+        <div class="c back">Filter by project_id</div>
+
+        <div class="laneL">Data</div>
+        <div class="c data">—</div>
+        <div class="c data">user_id</div>
+        <div class="c data">submission row</div>
+        <div class="c data">project_id FK</div>
+        <div class="c data">KPI tiles</div>
+        <div class="c data">CPI · SPI · risk · CR</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. LIFECYCLE RING -->
+  <section>
+    <div class="sec-num">04</div>
+    <h2 class="sec-h">The Two Clocks — lifecycle through iterations</h2>
+    <p class="sec-sub">A project runs the PMBOK clock once (outer ring). The product runs an iterative loop many times inside Execution (inner ring) — each turn emitting frozen records and refreshing living documents.</p>
+    <div class="ring-wrap">
+      <div class="ring">
+        <div class="o-circle"></div>
+        <div class="i-circle"></div>
+        <div class="ctr"><div class="t">Inner loop runs during</div><div class="b">Execution</div></div>
+        <!-- outer phase nodes -->
+        <div class="node pnode" style="left:190px; top:32px"><div class="s">01</div><div class="l">Initiation</div></div>
+        <div class="node pnode" style="left:330px; top:140px"><div class="s">02</div><div class="l">Planning</div></div>
+        <div class="node pnode" style="left:276px; top:312px"><div class="s">03</div><div class="l">Execution</div></div>
+        <div class="node pnode" style="left:104px; top:312px"><div class="s">04</div><div class="l">Monitoring</div></div>
+        <div class="node pnode" style="left:50px; top:140px"><div class="s">05</div><div class="l">Closing</div></div>
+        <!-- inner iteration nodes -->
+        <div class="node inode" style="left:190px; top:120px">Vision</div>
+        <div class="node inode" style="left:250px; top:155px">PRD</div>
+        <div class="node inode" style="left:250px; top:225px">Build</div>
+        <div class="node inode" style="left:190px; top:260px">Ship</div>
+        <div class="node inode" style="left:130px; top:225px">Learn</div>
+        <div class="node inode" style="left:130px; top:155px">Stories</div>
+      </div>
+      <div class="ring-legend">
+        <p><b>Outer ring — the project clock.</b> Five PMBOK phases, traversed once. Each phase ends on an <b>exit artifact</b>: Charter → Baseline → working software → cadence reports → Lessons &amp; Closure.</p>
+        <p><b>Inner ring — the product clock.</b> Vision → PRD → Stories → Build → Ship → Learn, repeated every sprint inside Execution.</p>
+        <div class="lg"><span class="sw" style="background:var(--ink)"></span><b>Frozen records</b>&nbsp;— ADR, RFC, postmortem, CR. Never edited; superseded.</div>
+        <div class="lg"><span class="sw" style="background:var(--accentbg);border:1px solid var(--accentsoft)"></span><b>Living documents</b>&nbsp;— README, runbook, risk register. Staleness is a defect.</div>
+        <div class="lg"><span class="sw" style="background:var(--accent)"></span><b>The Planner is the diff</b>&nbsp;— CPI/SPI trend, risk burn-down, milestone slip, per iteration.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. RACI -->
+  <section>
+    <div class="sec-num">05</div>
+    <h2 class="sec-h">RACI — who is accountable for what</h2>
+    <p class="sec-sub">Responsible · Accountable · Consulted · Informed across the key decisions and artifacts. Exactly one role is Accountable per row.</p>
+    <div class="grid-card">
+      <div class="raci">
+        <div class="hh first">Activity / Decision</div>
+        <div class="hh" title="Sponsor / Exec">Spon</div>
+        <div class="hh" title="Project Manager">PM</div>
+        <div class="hh" title="Product">Prod</div>
+        <div class="hh" title="Engineering / Tech Lead">Eng</div>
+        <div class="hh" title="QA">QA</div>
+        <div class="hh" title="SRE / Ops">Ops</div>
+        <div class="hh" title="Compliance">Comp</div>
+
+        <div class="act">Authorize project (Charter)</div>
+        <div class="cell"><span class="rb A">A</span></div><div class="cell"><span class="rb R">R</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb C">C</span></div>
+
+        <div class="act">Define requirements (PRD)</div>
+        <div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb A">A</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb I">I</span></div>
+
+        <div class="act">Architecture decision (ADR)</div>
+        <div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb A">A</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb C">C</span></div>
+
+        <div class="act">Build &amp; implement</div>
+        <div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb A">A</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb R">R</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb I">I</span></div>
+
+        <div class="act">Test &amp; UAT sign-off</div>
+        <div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb A">A</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb R">R</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb C">C</span></div>
+
+        <div class="act">Release / deploy</div>
+        <div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb A">A</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb R">R</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb R">R</span></div><div class="cell"><span class="rb I">I</span></div>
+
+        <div class="act">Incident response</div>
+        <div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb A">A</span></div><div class="cell"><span class="rb I">I</span></div>
+
+        <div class="act">Postmortem / RCA</div>
+        <div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb A">A</span></div><div class="cell"><span class="rb C">C</span></div>
+
+        <div class="act">Change request (CAB)</div>
+        <div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb A">A</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb C">C</span></div>
+
+        <div class="act">Risk review</div>
+        <div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb A">A</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb C">C</span></div>
+
+        <div class="act">Status reporting</div>
+        <div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb A">A</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb I">I</span></div>
+
+        <div class="act">Audit evidence / compliance</div>
+        <div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb I">I</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb A">A</span></div>
+
+        <div class="act">Project closure &amp; lessons</div>
+        <div class="cell"><span class="rb A">A</span></div><div class="cell"><span class="rb R">R</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb C">C</span></div><div class="cell"><span class="rb C">C</span></div>
+      </div>
+    </div>
+    <div class="raci-legend">
+      <span><span class="rb A" style="margin-right:5px">A</span><b>Accountable</b> — owns the outcome</span>
+      <span><span class="rb R" style="margin-right:5px">R</span><b>Responsible</b> — does the work</span>
+      <span><span class="rb C" style="margin-right:5px">C</span><b>Consulted</b> — two-way input</span>
+      <span><span class="rb I" style="margin-right:5px">I</span><b>Informed</b> — kept in the loop</span>
+    </div>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

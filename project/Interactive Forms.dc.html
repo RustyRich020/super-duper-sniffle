@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#222226; --muted:#6A6A6F; --faint:#9C9C98;
+    --page:#FBFBF9; --paper:#ECECE8; --soft:#F2F2EF; --softer:#F7F7F4;
+    --rule:#E3E3DE; --line:#D4D4CF; --field:#FFFFFF;
+    --accent:#B5862A; --accent2:#E6C658; --accentsoft:#F0E4BC; --accentbg:#FAF4E2;
+    --sidebar:#1E1E21;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; height:100%; }
+  body{ background:var(--paper); color:var(--ink); font-family:'IBM Plex Sans',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  a{ color:inherit; }
+
+  .app{ display:grid; grid-template-columns:312px 1fr; min-height:100vh; }
+
+  /* ---- Sidebar / index ---- */
+  .side{ background:var(--sidebar); color:#E7E7E1; position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto; padding:24px 0 40px; }
+  .side-brand{ display:flex; align-items:center; gap:11px; padding:4px 24px 20px; }
+  .side-brand img{ height:34px; filter:brightness(0) invert(1); opacity:.95; }
+  .side-brand .bt{ font-family:'IBM Plex Mono'; font-size:10px; letter-spacing:.26em; text-transform:uppercase; color:#CFCFC6; }
+  .side-h{ font-family:'IBM Plex Mono'; font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:#7E7E84; padding:18px 24px 6px; }
+  .side a.item{ display:flex; gap:10px; align-items:baseline; padding:8px 24px; text-decoration:none; color:#CACAC4; border-left:2px solid transparent; }
+  .side a.item:hover{ background:rgba(255,255,255,.04); color:#fff; }
+  .side a.item.active{ border-left-color:var(--accent2); background:rgba(230,198,88,.08); color:#fff; }
+  .side a.item .ic{ font-family:'IBM Plex Mono'; font-size:10px; color:var(--accent2); width:5.6ch; flex:none; }
+  .side a.item .tt{ font-family:'Spectral'; font-size:13.5px; line-height:1.25; }
+  .side a.item.disabled{ color:#5C5C61; pointer-events:none; }
+  .side-note{ margin:16px 24px 0; padding:12px 14px; background:rgba(255,255,255,.04); border-radius:8px;
+    font-size:11px; line-height:1.5; color:#9A9A9F; }
+  .side-note b{ color:var(--accent2); font-weight:500; }
+
+  /* ---- Main ---- */
+  .main{ min-width:0; }
+  .topbar{ position:sticky; top:0; z-index:20; background:rgba(251,251,249,.92); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--rule); display:flex; align-items:center; justify-content:space-between; padding:13px 36px; }
+  .topbar .crumbs{ font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:.04em; color:var(--muted); }
+  .topbar .crumbs b{ color:var(--ink); font-weight:500; }
+  .acts{ display:flex; align-items:center; gap:8px; }
+  .btn{ font-family:'IBM Plex Sans'; font-size:12px; font-weight:500; padding:7px 13px; border-radius:7px;
+    border:1px solid var(--line); background:var(--field); color:var(--ink); cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+  .btn:hover{ border-color:var(--accent); color:var(--accent); }
+  .btn.primary{ background:var(--ink); color:var(--page); border-color:var(--ink); }
+  .btn.primary:hover{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .saved{ font-family:'IBM Plex Mono'; font-size:11px; color:var(--faint); display:flex; align-items:center; gap:6px; }
+  .saved .dotg{ width:7px; height:7px; border-radius:50%; background:#5FA463; }
+
+  .wrap{ max-width:880px; margin:0 auto; padding:40px 36px 90px; }
+  .fhead{ border-bottom:2px solid var(--ink); padding-bottom:20px; margin-bottom:8px; }
+  .fkick{ display:flex; align-items:center; gap:10px; font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); }
+  .fkick .dom{ color:var(--faint); }
+  .ftitle{ font-family:'Spectral'; font-weight:600; font-size:38px; line-height:1.05; letter-spacing:-.6px; margin:12px 0 8px; }
+  .fpurpose{ font-family:'Spectral'; font-style:italic; font-size:16px; line-height:1.5; color:var(--muted); margin:0; max-width:60ch; }
+
+  .meta{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin:26px 0 34px; }
+  .meta .mf{ display:flex; flex-direction:column; gap:5px; }
+  .meta label{ font-family:'IBM Plex Mono'; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); }
+  .meta input, .meta select{ font-family:'IBM Plex Sans'; font-size:13px; color:var(--ink); background:var(--field);
+    border:1px solid var(--line); border-radius:6px; padding:8px 10px; width:100%; }
+  .meta input:focus, .meta select:focus, .sec textarea:focus, .sec input:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accentbg); }
+
+  .sec{ border:1px solid var(--rule); border-radius:12px; background:var(--page); padding:20px 22px; margin-bottom:18px; }
+  .sec-top{ display:flex; align-items:baseline; justify-content:space-between; gap:14px; }
+  .sec-label{ font-family:'IBM Plex Sans'; font-weight:600; font-size:15px; color:var(--ink); }
+  .sec-req{ font-family:'IBM Plex Mono'; font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); }
+  .sec-guide{ font-size:12.5px; line-height:1.5; color:var(--muted); margin:7px 0 0; }
+  .sec-meta{ display:flex; flex-wrap:wrap; gap:18px; margin:10px 0 14px; }
+  .sec-eg, .sec-why{ font-size:11.5px; line-height:1.45; flex:1; min-width:220px; }
+  .sec-eg{ color:var(--ink); }
+  .sec-eg .k, .sec-why .k{ font-family:'IBM Plex Mono'; font-size:8.5px; letter-spacing:.12em; text-transform:uppercase; display:block; margin-bottom:2px; }
+  .sec-eg .k{ color:var(--accent); } .sec-why .k{ color:var(--faint); }
+  .sec-eg em{ font-style:italic; color:var(--muted); }
+  .sec-why{ color:var(--muted); border-left:2px solid var(--accentsoft); padding-left:12px; }
+
+  .sec textarea{ width:100%; font-family:'IBM Plex Sans'; font-size:13.5px; line-height:1.6; color:var(--ink);
+    background:var(--field); border:1px solid var(--line); border-radius:8px; padding:11px 13px; resize:none; overflow:hidden; min-height:64px; }
+  .sec > input.line{ width:100%; font-family:'IBM Plex Sans'; font-size:13.5px; color:var(--ink); background:var(--field);
+    border:1px solid var(--line); border-radius:8px; padding:10px 13px; }
+
+  table.grid{ width:100%; border-collapse:collapse; margin-top:4px; }
+  table.grid th{ text-align:left; font-family:'IBM Plex Mono'; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--muted); padding:6px 8px; border-bottom:1.5px solid var(--ink); }
+  table.grid td{ padding:0; border-bottom:1px solid var(--rule); border-right:1px solid var(--rule); }
+  table.grid td:last-child{ border-right:none; }
+  table.grid input{ width:100%; border:none; background:transparent; font-family:'IBM Plex Sans'; font-size:13px; color:var(--ink); padding:9px 8px; }
+  table.grid input:focus{ outline:none; background:var(--accentbg); }
+  .addrow{ margin-top:10px; font-size:12px; font-weight:500; color:var(--accent); background:none; border:1px dashed var(--line);
+    border-radius:7px; padding:7px 12px; cursor:pointer; }
+  .addrow:hover{ border-color:var(--accent); }
+
+  .checks{ display:flex; flex-direction:column; gap:10px; margin-top:4px; }
+  .chk{ display:flex; align-items:center; gap:11px; font-size:13.5px; color:var(--ink); cursor:pointer; }
+  .chk input{ width:18px; height:18px; accent-color:var(--accent); }
+
+  /* ---- Modal ---- */
+  .modal{ position:fixed; inset:0; background:rgba(30,28,24,.5); display:none; align-items:center; justify-content:center; z-index:50; padding:30px; }
+  .modal.open{ display:flex; }
+  .sheetm{ background:var(--page); border-radius:14px; width:min(880px,100%); max-height:88vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.3); }
+  .sheetm header{ display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--rule); }
+  .sheetm header h3{ font-family:'Spectral'; font-weight:600; font-size:20px; margin:0; }
+  .tabs{ display:flex; gap:6px; padding:12px 22px 0; }
+  .tab{ font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:.06em; text-transform:uppercase; padding:8px 13px; border-radius:7px 7px 0 0;
+    border:1px solid transparent; border-bottom:none; cursor:pointer; color:var(--muted); }
+  .tab.active{ color:var(--ink); background:var(--softer); border-color:var(--rule); }
+  .codewrap{ margin:0 22px; flex:1; overflow:auto; border:1px solid var(--rule); border-radius:0 8px 8px 8px; }
+  .codewrap pre{ margin:0; padding:16px 18px; font-family:'IBM Plex Mono'; font-size:11.5px; line-height:1.6; color:var(--ink); white-space:pre; background:var(--softer); }
+  .modal-foot{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:16px 22px; }
+  .modal-foot .hint{ font-size:11.5px; color:var(--muted); max-width:48ch; line-height:1.45; }
+  .iconbtn{ background:none; border:none; cursor:pointer; color:var(--muted); font-size:20px; line-height:1; }
+
+  /* ---- Print ---- */
+  @media print{
+    @page{ margin:14mm; }
+    .side, .topbar, .addrow, .modal, .side-note{ display:none !important; }
+    .app{ display:block; }
+    .wrap{ max-width:none; padding:0; }
+    .sec{ break-inside:avoid; border-color:var(--line); }
+    .sec textarea, .meta input, .sec input.line, table.grid input{ border-color:var(--line); }
+    .fpurpose, .ftitle{ }
+  }
+  /* ---- Scaled nav + backend (added) ---- */
+  .side-search{ margin:2px 18px 8px; }
+  .side-search input{ width:100%; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.09); color:#EAEAE4;
+    border-radius:8px; padding:9px 11px; font-family:'IBM Plex Sans'; font-size:12.5px; }
+  .side-search input::placeholder{ color:#7E7E84; }
+  .side-search input:focus{ outline:none; border-color:var(--accent2); }
+  .side-ghead{ display:flex; align-items:center; justify-content:space-between; gap:8px; cursor:pointer; padding:11px 18px 7px; user-select:none; }
+  .side-ghead .gname{ font-family:'IBM Plex Mono'; font-weight:500; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent2); }
+  .side-ghead:hover .gname{ color:#F2DE8E; }
+  .side-ghead .gmeta{ display:flex; align-items:center; gap:9px; }
+  .side-ghead .gcount{ font-family:'IBM Plex Mono'; font-size:9px; color:#67676D; }
+  .side-ghead .chev{ color:#67676D; font-size:9px; transition:transform .15s; }
+  .side-group.collapsed .chev{ transform:rotate(-90deg); }
+  .side-group.collapsed .side-gbody{ display:none; }
+  .cloud{ display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted); margin-right:4px; }
+  .cloud .cd{ width:7px; height:7px; border-radius:50%; background:var(--accent); }
+  .cloud.on .cd{ background:#5FA463; }
+  .cfield{ display:flex; flex-direction:column; gap:5px; margin:0 0 12px; }
+  .cfield label{ font-family:'IBM Plex Mono'; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); }
+  .cfield input{ font-family:'IBM Plex Sans'; font-size:13px; border:1px solid var(--line); border-radius:6px; padding:9px 11px; }
+  .cfield input:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accentbg); }
+  .instbar{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; background:var(--softer); border:1px solid var(--rule);
+    border-radius:10px; padding:10px 12px; margin-bottom:22px; }
+  .instbar .ib-l{ font-family:'IBM Plex Mono'; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); }
+  .instbar select{ font-family:'IBM Plex Sans'; font-size:13px; border:1px solid var(--line); border-radius:6px; padding:7px 9px; background:var(--field); max-width:240px; }
+  .instbar input{ flex:1; min-width:160px; font-family:'IBM Plex Sans'; font-size:13px; border:1px solid var(--line); border-radius:6px; padding:7px 10px; background:var(--field); }
+  .instbar input:focus, .instbar select:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accentbg); }
+  .instbar .btn{ padding:6px 11px; }
+  .instbar.local{ display:block; font-size:12.5px; color:var(--muted); }
+  .instbar.local a{ color:var(--accent); text-decoration:none; border-bottom:1px solid var(--accentsoft); cursor:pointer; }
+  @media print{ .instbar, #amodal{ display:none !important; } }
+
+  /* ---- Guidance toggle + Gallery view ---- */
+  #form.lean .sec-guide, #form.lean .sec-meta{ display:none; }
+  #form.lean .sec{ padding:14px 18px; margin-bottom:12px; }
+  #form.gallery-mode{ max-width:1180px; }
+  .gal-head{ border-bottom:2px solid var(--ink); padding-bottom:18px; margin-bottom:8px; }
+  .gal-head h1{ font-family:'Spectral'; font-weight:600; font-size:34px; letter-spacing:-.5px; margin:0 0 6px; }
+  .gal-head p{ font-family:'Spectral'; font-style:italic; font-size:15px; color:var(--muted); margin:0; max-width:60ch; }
+  .gal-dom{ display:flex; align-items:baseline; gap:10px; margin:30px 0 2px; }
+  .gal-dom .gd-name{ font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); }
+  .gal-dom .gd-count{ font-family:'IBM Plex Mono'; font-size:10px; color:var(--faint); }
+  .gal-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(232px,1fr)); gap:15px; margin:12px 0 8px; }
+  .gcard{ position:relative; border:1px solid var(--rule); border-radius:14px; background:var(--page); padding:17px 17px 14px; text-decoration:none; color:inherit;
+    display:flex; flex-direction:column; gap:9px; min-height:168px; overflow:hidden; transition:border-color .18s, box-shadow .18s, transform .18s; }
+  .gcard::before{ content:""; position:absolute; left:0; top:0; height:3px; width:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); opacity:0; transition:opacity .18s; }
+  .gcard:hover{ border-color:var(--accent); box-shadow:0 14px 32px rgba(40,30,12,.11); transform:translateY(-3px); }
+  .gcard:hover::before{ opacity:1; }
+  .gc-code{ align-self:flex-start; font-family:'IBM Plex Mono'; font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent);
+    background:var(--accentbg); border:1px solid var(--accentsoft); border-radius:5px; padding:3px 7px; }
+  .gc-title{ font-family:'Spectral'; font-weight:600; font-size:18px; line-height:1.16; letter-spacing:-.2px; color:var(--ink); }
+  .gc-purpose{ font-size:11.5px; line-height:1.46; color:var(--muted); flex:1; }
+  .gc-foot{ display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono'; font-size:9px; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--faint); border-top:1px solid var(--rule); padding-top:11px; }
+  .gc-foot .arr{ color:var(--accent); opacity:0; transform:translateX(-4px); transition:opacity .18s, transform .18s; font-size:13px; }
+  .gcard:hover .gc-foot .arr{ opacity:1; transform:translateX(0); }
+
+  /* ---- Landing ---- */
+  .landing{ position:fixed; inset:0; z-index:100; display:grid; grid-template-columns:1.05fr .95fr; background:var(--paper); }
+  .landing.hidden{ display:none; }
+  .lnd-left{ background:var(--sidebar); color:#ECECE6; padding:40px 52px; display:flex; flex-direction:column; position:relative; overflow-y:auto; }
+  .lnd-left::before{ content:""; position:absolute; inset:20px; border:1px solid rgba(230,198,88,.16); pointer-events:none; }
+  .lnd-brand{ display:flex; align-items:center; gap:15px; position:relative; z-index:1; }
+  .lnd-brand img{ height:52px; filter:brightness(0) invert(1); opacity:.97; }
+  .lnd-brand span{ font-family:'IBM Plex Mono'; font-size:13.5px; letter-spacing:.3em; text-transform:uppercase; color:#E4E4DC; }
+  .lnd-hero{ margin:auto 0; position:relative; z-index:1; }
+  .lnd-kicker{ font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:.32em; text-transform:uppercase; color:var(--accent2); margin-bottom:16px; }
+  .lnd-title{ font-family:'Spectral'; font-weight:600; font-size:58px; line-height:1.0; letter-spacing:-1px; margin:0; color:#FAF4E8; max-width:13ch; }
+  .lnd-title em{ font-style:italic; color:var(--accentsoft); }
+  .lnd-sub{ font-family:'Spectral'; font-size:15.5px; line-height:1.56; color:#CFCFC8; margin:18px 0 24px; max-width:46ch; }
+  .lnd-feats{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; }
+  .lnd-feats li{ position:relative; padding-left:23px; font-size:13.5px; color:#BCBCB4; line-height:1.45; max-width:48ch; }
+  .lnd-feats li::before{ content:""; position:absolute; left:0; top:6px; width:7px; height:7px; border-radius:50%; background:var(--accent2); }
+  .lnd-feats li b{ color:#EAE3D1; font-weight:600; }
+  .lnd-foot{ font-family:'IBM Plex Mono'; font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:#74747A; position:relative; z-index:1; }
+  .lnd-right{ display:flex; align-items:center; justify-content:center; padding:40px; overflow-y:auto; }
+  .lnd-card{ width:100%; max-width:382px; }
+  .lnd-tabs{ display:flex; gap:4px; background:var(--soft); border:1px solid var(--rule); border-radius:10px; padding:4px; margin-bottom:24px; }
+  .lnd-tab{ flex:1; font-family:'IBM Plex Sans'; font-weight:500; font-size:13px; padding:9px; border:none; background:none; border-radius:7px; color:var(--muted); cursor:pointer; }
+  .lnd-tab.active{ background:var(--field); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.06); }
+  .lnd-fl{ font-family:'IBM Plex Mono'; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); display:block; margin:0 0 6px; }
+  #lnd-auth input{ width:100%; font-family:'IBM Plex Sans'; font-size:14px; border:1px solid var(--line); border-radius:8px; padding:11px 13px; margin-bottom:16px; background:var(--field); color:var(--ink); }
+  #lnd-auth input:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accentbg); }
+  .lnd-msg{ font-size:12px; line-height:1.45; color:var(--muted); min-height:16px; margin:0 0 10px; }
+  .lnd-primary{ width:100%; font-family:'IBM Plex Sans'; font-weight:600; font-size:14px; padding:12px; border-radius:8px; border:1px solid var(--ink); background:var(--ink); color:var(--page); cursor:pointer; }
+  .lnd-primary:hover{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .lnd-ghost{ width:100%; font-family:'IBM Plex Sans'; font-size:13px; padding:10px; border-radius:8px; border:none; background:none; color:var(--muted); cursor:pointer; margin-top:8px; }
+  .lnd-ghost:hover{ color:var(--accent); }
+  .lnd-sep{ display:flex; align-items:center; gap:12px; margin:20px 0; color:var(--faint); font-family:'IBM Plex Mono'; font-size:10px; letter-spacing:.1em; text-transform:uppercase; }
+  .lnd-sep::before, .lnd-sep::after{ content:""; flex:1; height:1px; background:var(--rule); }
+  .lnd-browse{ width:100%; font-family:'IBM Plex Sans'; font-weight:500; font-size:13.5px; padding:11px; border-radius:8px; border:1px solid var(--line); background:var(--field); color:var(--ink); cursor:pointer; }
+  .lnd-browse:hover{ border-color:var(--accent); color:var(--accent); }
+  .lnd-note{ font-size:11px; line-height:1.5; color:var(--faint); margin:18px 0 0; text-align:center; }
+  .lnd-cloud{ display:block; margin-top:4px; font-family:'IBM Plex Mono'; font-size:10px; }
+  .lnd-signed-txt{ font-size:14px; line-height:1.5; color:var(--ink); margin:0 0 16px; }
+  .lnd-signed-txt b{ color:var(--accent); }
+  @media (max-width:820px){ .landing{ grid-template-columns:1fr; } .lnd-left{ display:none; } }
+  .lnd-rstack{ width:100%; max-width:382px; display:flex; flex-direction:column; gap:20px; }
+  .lnd-preview{ background:var(--page); border:1px solid var(--rule); border-radius:14px; box-shadow:0 16px 40px rgba(40,30,12,.15); padding:15px 16px 14px; position:relative; overflow:hidden; transition:opacity .55s ease; }
+  .lnd-preview::before{ content:""; position:absolute; left:0; top:0; height:3px; width:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); }
+  .lp-kick{ font-family:'IBM Plex Mono'; font-size:8.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); }
+  .lp-title{ font-family:'Spectral'; font-weight:600; font-size:17px; color:var(--ink); margin:3px 0 11px; letter-spacing:-.2px; }
+  .lp-sec{ border:1px solid var(--rule); border-radius:9px; padding:9px 11px; margin-bottom:8px; }
+  .lp-sec:last-child{ margin-bottom:0; }
+  .lp-sl{ font-family:'IBM Plex Sans'; font-weight:600; font-size:11px; color:var(--ink); }
+  .lp-eg{ font-size:9.5px; line-height:1.4; color:var(--muted); margin:4px 0 7px; }
+  .lp-eg b{ font-family:'IBM Plex Mono'; font-size:8px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); font-weight:500; }
+  .lp-line{ height:7px; border-radius:3px; background:var(--soft); margin-top:6px; }
+  .lp-line.short{ width:62%; }
+  @media (max-height:700px){ .lnd-preview{ display:none; } }
+
+  /* ---- Planner / PMBOK dashboard ---- */
+  #form.planner-mode{ max-width:1200px; }
+  .dash-head{ border-bottom:2px solid var(--ink); padding-bottom:18px; margin-bottom:22px; display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; }
+  .dash-head h1{ font-family:'Spectral'; font-weight:600; font-size:33px; letter-spacing:-.5px; margin:0 0 5px; }
+  .dash-head p{ font-family:'Spectral'; font-style:italic; font-size:14px; color:var(--muted); margin:0; max-width:60ch; }
+  .dash-head .asof{ font-family:'IBM Plex Mono'; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--faint); white-space:nowrap; }
+  .planner-sub{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px; }
+  .psub{ font-family:'IBM Plex Mono'; font-size:10px; letter-spacing:.04em; text-transform:uppercase; padding:6px 11px; border-radius:7px; border:1px solid var(--line); color:var(--muted); background:var(--field); }
+  .psub.active{ background:var(--ink); color:var(--page); border-color:var(--ink); }
+  .kpi-row{ display:grid; grid-template-columns:repeat(6,1fr); gap:13px; margin-bottom:20px; }
+  .kpi{ border:1px solid var(--rule); border-radius:12px; background:var(--page); padding:14px 15px; }
+  .kpi .kl{ font-family:'IBM Plex Mono'; font-size:8.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--faint); }
+  .kpi .kv{ font-family:'Spectral'; font-weight:600; font-size:26px; line-height:1.1; margin-top:6px; letter-spacing:-.5px; }
+  .kpi .kd{ font-family:'IBM Plex Mono'; font-size:9px; margin-top:5px; color:var(--muted); }
+  .kpi .kd.down{ color:#C2603F; } .kpi .kd.up{ color:#4C8A50; }
+  .dash-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px; }
+  .dash-card{ border:1px solid var(--rule); border-radius:14px; background:var(--page); padding:18px 20px; }
+  .dash-card.full{ grid-column:1 / -1; }
+  .dc-h{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:14px; }
+  .dc-h h3{ font-family:'Spectral'; font-weight:600; font-size:17px; margin:0; }
+  .dc-h .more{ font-family:'IBM Plex Mono'; font-size:9px; letter-spacing:.06em; text-transform:uppercase; color:var(--faint); }
+  .rag{ display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono'; font-size:10px; letter-spacing:.03em; text-transform:uppercase; white-space:nowrap; }
+  .rag .d{ width:8px; height:8px; border-radius:50%; flex:none; }
+  .rag.green .d{ background:#5FA463; } .rag.amber .d{ background:#C9962B; } .rag.red .d{ background:#C2603F; }
+  .rag.green{ color:#4C8A50; } .rag.amber{ color:#A67C1E; } .rag.red{ color:#B0512E; }
+  table.ptab{ width:100%; border-collapse:collapse; }
+  table.ptab th{ text-align:left; font-family:'IBM Plex Mono'; font-size:8.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); padding:7px 8px; border-bottom:1.5px solid var(--ink); }
+  table.ptab td{ padding:9px 8px; border-bottom:1px solid var(--rule); font-size:12.5px; vertical-align:middle; }
+  table.ptab tr:last-child td{ border-bottom:none; }
+  table.ptab .pname{ font-family:'Spectral'; font-weight:600; font-size:13.5px; line-height:1.1; }
+  table.ptab .pcode{ font-family:'IBM Plex Mono'; font-size:9px; color:var(--accent); margin-top:2px; }
+  .pbar{ height:6px; border-radius:3px; background:var(--soft); overflow:hidden; }
+  .pbar i{ display:block; height:100%; background:var(--accent); border-radius:3px; }
+  .ka-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0 20px; }
+  .ka{ display:flex; align-items:center; justify-content:space-between; padding:7.5px 0; border-bottom:1px solid var(--rule); }
+  .ka .kan{ font-size:12.5px; }
+  .tl-row{ display:flex; gap:12px; align-items:flex-start; padding:9px 0; border-bottom:1px solid var(--rule); }
+  .tl-row:last-child{ border-bottom:none; }
+  .tl-date{ font-family:'IBM Plex Mono'; font-size:10px; color:var(--muted); width:46px; flex:none; padding-top:1px; }
+  .tl-body{ flex:1; min-width:0; } .tl-name{ font-size:12.5px; font-weight:500; } .tl-meta{ font-family:'IBM Plex Mono'; font-size:9px; color:var(--faint); margin-top:2px; }
+  .risk-row{ display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid var(--rule); }
+  .risk-row:last-child{ border-bottom:none; }
+  .risk-score{ font-family:'IBM Plex Mono'; font-weight:500; font-size:12px; width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; flex:none; color:#fff; }
+  .risk-body{ flex:1; min-width:0; } .risk-name{ font-size:12.5px; line-height:1.25; } .risk-meta{ font-family:'IBM Plex Mono'; font-size:9px; color:var(--faint); margin-top:2px; }
+  .cc-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .cc-stat{ text-align:center; padding:11px 6px; border:1px solid var(--rule); border-radius:10px; }
+  .cc-stat .n{ font-family:'Spectral'; font-weight:600; font-size:23px; } .cc-stat .l{ font-family:'IBM Plex Mono'; font-size:8px; letter-spacing:.06em; text-transform:uppercase; color:var(--faint); margin-top:3px; }
+  .budget-row{ display:flex; align-items:center; gap:12px; padding:8px 0; }
+  .budget-row .bn{ font-size:12px; width:80px; flex:none; } .budget-row .bbar{ flex:1; height:8px; border-radius:4px; background:var(--soft); overflow:hidden; } .budget-row .bbar i{ display:block; height:100%; border-radius:4px; } .budget-row .bv{ font-family:'IBM Plex Mono'; font-size:10px; color:var(--muted); width:108px; text-align:right; flex:none; }
+  .team-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid var(--rule); font-size:12.5px; }
+  .team-row:last-child{ border-bottom:none; }
+  @media (max-width:1040px){ .kpi-row{ grid-template-columns:repeat(3,1fr); } .dash-grid{ grid-template-columns:1fr; } }
+  a.psub{ text-decoration:none; cursor:pointer; }
+  a.psub:hover{ border-color:var(--accent); color:var(--accent); }
+  a.psub.active{ background:var(--ink); color:var(--page); border-color:var(--ink); }
+  a.psub.active:hover{ color:var(--page); }
+  .psub.disabled{ opacity:.45; }
+  .dsrc{ font-family:'IBM Plex Mono'; font-size:9.5px; letter-spacing:.03em; color:var(--faint); }
+  .dsrc.live{ color:#4C8A50; }
+  .plnr-proj{ font-family:'IBM Plex Sans'; font-size:12px; border:1px solid var(--line); border-radius:7px; padding:6px 9px; background:var(--field); color:var(--ink); margin-top:7px; max-width:210px; }
+  .plnr-proj:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accentbg); }
+  .np-card .np-grid{ display:grid; grid-template-columns:1.5fr .7fr 1.1fr .8fr 1fr 1.1fr .9fr auto; gap:10px; align-items:center; }
+  .np-grid input, .np-grid select{ font-family:'IBM Plex Sans'; font-size:12.5px; border:1px solid var(--line); border-radius:7px; padding:8px 9px; background:var(--field); color:var(--ink); width:100%; }
+  .np-grid input:focus, .np-grid select:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accentbg); }
+  .np-grid .btn{ white-space:nowrap; }
+  .matrix{ display:grid; grid-template-columns:auto repeat(5,1fr); gap:4px; }
+  .matrix .mh, .matrix .axis{ font-family:'IBM Plex Mono'; font-size:8.5px; color:var(--faint); display:flex; align-items:center; justify-content:center; }
+  .matrix .mc{ aspect-ratio:1.7/1; border-radius:5px; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-size:12px; font-weight:500; }
+  .catbar{ display:flex; align-items:center; gap:10px; padding:6px 0; }
+  .catbar .cn{ font-size:12px; width:104px; flex:none; } .catbar .cb{ flex:1; height:8px; background:var(--soft); border-radius:4px; overflow:hidden; } .catbar .cb i{ display:block; height:100%; background:var(--accent); border-radius:4px; } .catbar .cv{ font-family:'IBM Plex Mono'; font-size:10px; color:var(--muted); width:24px; text-align:right; flex:none; }
+  .stat-pill{ display:inline-flex; align-items:center; gap:7px; border:1px solid var(--rule); border-radius:9px; padding:7px 11px; font-family:'IBM Plex Mono'; font-size:12px; color:var(--muted); }
+  .proj-status{ display:flex; align-items:center; gap:16px; padding:13px 0; border-bottom:1px solid var(--rule); }
+  .proj-status:last-child{ border-bottom:none; }
+  .proj-status .ps-bar{ width:120px; flex:none; }
+  @media print{ .np-card{ display:none; } }
+  @media (max-width:1040px){ .np-card .np-grid{ grid-template-columns:1fr 1fr; } }
+</style>
+<script src="forms-data.js"></script>
+<script src="forms-rich.js"></script>
+</helmet>
+<div class="app">
+  <aside class="side">
+    <div class="side-brand"><img src="assets/qq-logo.png" alt="QQ Studios"><span class="bt">Forms</span></div>
+    <div class="side-search"><input id="nav-search" placeholder="Search forms…" autocomplete="off"></div>
+    <div id="index"></div>
+    <div class="side-note"><b>All 77 forms live.</b> Every form is editable and saves automatically. Four — PRD, ADR, Postmortem &amp; Onboarding — carry the full <b>example</b> + <b>why-it-matters</b> guidance; the rest are being enriched the same way.</div>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <div class="crumbs" id="crumbs">Forms Workbook</div>
+      <div class="acts">
+        <button class="btn" id="btn-gallery">▦ Gallery</button>
+        <button class="btn" id="btn-planner">▱ Planner</button>
+        <button class="btn" id="btn-guide">Hide guidance</button>
+        <span class="cloud" id="cloud"><span class="cd"></span><span class="cl">Local only</span></span>
+        <span class="saved" id="saved"><span class="dotg"></span> Saved</span>
+        <button class="btn" id="btn-connect">Connect DB</button>
+        <button class="btn" id="btn-account">Sign in</button>
+        <button class="btn" id="btn-export">Export data</button>
+        <button class="btn" id="btn-import">Import</button>
+        <button class="btn" id="btn-schema">Schema</button>
+        <button class="btn primary" id="btn-print">Print</button>
+      </div>
+    </div>
+    <div class="wrap" id="form"></div>
+  </main>
+</div>
+<input type="file" id="file-import" accept="application/json" style="display:none">
+<div class="modal" id="modal">
+  <div class="sheetm">
+    <header><h3>Database structure</h3><button class="iconbtn" id="modal-close">×</button></header>
+    <div class="tabs">
+      <div class="tab active" data-tab="sql">SQL DDL</div>
+      <div class="tab" data-tab="json">JSON Schema</div>
+    </div>
+    <div class="codewrap"><pre id="code-out"></pre></div>
+    <div class="modal-foot">
+      <span class="hint">Each form is a table; multi-row sections (e.g. Requirements, Timeline) become child tables. Hand this to your dev team or load it into Postgres / Supabase.</span>
+      <div style="display:flex;gap:8px"><button class="btn" id="btn-copy">Copy</button><button class="btn primary" id="btn-dl">Download</button></div>
+    </div>
+  </div>
+</div>
+<div class="modal" id="cmodal">
+  <div class="sheetm" style="width:min(620px,100%)">
+    <header><h3>Connect a database</h3><button class="iconbtn" id="c-close">×</button></header>
+    <div style="padding:18px 22px; overflow:auto">
+      <p style="font-size:12.5px;line-height:1.55;color:var(--muted);margin:0 0 14px">Sync to your own Supabase project. First, run this once in the Supabase SQL editor, then paste your project URL and anon public key below.</p>
+      <div class="codewrap" style="margin:0 0 16px"><pre id="supa-sql"></pre></div>
+      <div class="cfield"><label>Supabase URL</label><input id="c-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
+      <div class="cfield"><label>Anon public key</label><input id="c-key" placeholder="eyJhbGci…" autocomplete="off"></div>
+      <p style="font-size:11px;line-height:1.5;color:var(--faint);margin:4px 0 0">Credentials are stored only in this browser. The anon key is safe to use client-side when row-level security is configured.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="c-disconnect">Disconnect</button>
+      <div style="display:flex;gap:8px"><button class="btn" id="c-close2">Cancel</button><button class="btn primary" id="c-connect">Connect &amp; sync</button></div>
+    </div>
+  </div>
+</div>
+<div class="modal" id="amodal">
+  <div class="sheetm" style="width:min(440px,100%)">
+    <header><h3>Account</h3><button class="iconbtn" id="a-close">×</button></header>
+    <div style="padding:18px 22px">
+      <p style="font-size:12.5px;line-height:1.5;color:var(--muted);margin:0 0 14px">Sign in to keep your own submissions — as many named instances per form as you need. Requires a connected database.</p>
+      <div class="cfield"><label>Email</label><input id="a-email" type="email" autocomplete="username" placeholder="you@company.com"></div>
+      <div class="cfield"><label>Password</label><input id="a-pw" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+      <p id="a-msg" style="font-size:11.5px;line-height:1.45;color:var(--muted);min-height:16px;margin:2px 0 0"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="a-magic">Email a magic link</button>
+      <div style="display:flex;gap:8px"><button class="btn" id="a-signup">Create account</button><button class="btn primary" id="a-signin">Sign in</button></div>
+    </div>
+  </div>
+</div>
+<div id="landing" class="landing hidden">
+  <div class="lnd-left">
+    <div class="lnd-brand"><img src="assets/qq-logo.png" alt="QQ Studios"><span>QQ-Studios</span></div>
+    <div class="lnd-hero">
+      <div class="lnd-kicker">The Development Documentation System</div>
+      <h1 class="lnd-title">Never start from a <em>blank page.</em></h1>
+      <p class="lnd-sub">Seventy-seven proven templates &mdash; from PRDs and ADRs to runbooks, postmortems, and compliance matrices &mdash; organized across the eight disciplines of software documentation. Every field carries a real example and the reason it matters, so you never start from a blank page.</p>
+      <ul class="lnd-feats">
+        <li><b>77 document types</b>, organized across 8 disciplines</li>
+        <li>Every field guided by a <b>concrete example</b> and why it matters</li>
+        <li>Fill on screen &mdash; <b>auto-saved privately</b> to your account</li>
+        <li>Companion to the printed <b>Reference Book</b> &amp; <b>Forms Workbook</b></li>
+      </ul>
+    </div>
+    <div class="lnd-foot">QQ-Studios &middot; Forms Workspace &middot; 2026</div>
+  </div>
+  <div class="lnd-right">
+    <div class="lnd-rstack">
+    <div class="lnd-preview" id="lnd-preview" aria-hidden="true">
+      <div class="lp-kick">Form · PRD</div>
+      <div class="lp-title">Product Requirements</div>
+      <div class="lp-sec"><div class="lp-sl">Problem statement &amp; evidence</div><div class="lp-eg"><b>e.g.</b> CSV imports fail ~12% of the time.</div><div class="lp-line"></div><div class="lp-line short"></div></div>
+      <div class="lp-sec"><div class="lp-sl">Goals &amp; success metrics</div><div class="lp-line"></div></div>
+    </div>
+    <div class="lnd-card">
+      <div class="lnd-tabs"><button class="lnd-tab active" data-lt="in">Sign in</button><button class="lnd-tab" data-lt="up">Create account</button></div>
+      <div id="lnd-auth">
+        <label class="lnd-fl">Email</label>
+        <input id="l-email" type="email" autocomplete="username" placeholder="you@company.com">
+        <label class="lnd-fl">Password</label>
+        <input id="l-pw" type="password" autocomplete="current-password" placeholder="••••••••">
+        <p id="l-msg" class="lnd-msg"></p>
+        <button class="lnd-primary" id="l-submit">Sign in</button>
+        <button class="lnd-ghost" id="l-magic">Email me a magic link instead</button>
+      </div>
+      <div id="lnd-signed" style="display:none">
+        <p class="lnd-signed-txt">You're signed in as <b id="l-who"></b>.</p>
+        <button class="lnd-primary" id="l-continue">Continue to your forms →</button>
+        <button class="lnd-ghost" id="l-signout">Sign out</button>
+      </div>
+      <div class="lnd-sep"><span>or</span></div>
+      <button class="lnd-browse" id="l-browse">Browse the form gallery →</button>
+      <p class="lnd-note">Browse and fill forms without an account — sign in to save them. <span id="l-cloud" class="lnd-cloud"></span></p>
+    </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+
+  async componentDidMount() {
+    if (this._init) return; this._init = true;
+    this.KEY = 'qq_forms_db_v1';
+    this.DEFAULT_SUPA = { url: 'https://meosdrvquwybipqjrzwv.supabase.co', key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lb3NkcnZxdXd5YmlwcWpyend2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NDA0NTksImV4cCI6MjA5NzQxNjQ1OX0.oe2X_18p_CeA7ZWJW-ZpSqipK1vfKI3hFoD7M5y9jNA' };
+    this.db = this.load();
+    await this.waitFor(() => window.FORMS && window.DOMAINS);
+    this.defs = this.allDefs();
+    this.domains = window.DOMAINS;
+    this.collapsed = new Set(this.domains.map((_, i) => i));
+    const ad = (this.defs.find(d => d.id === this.currentId()) || this.defs[0]).d;
+    this.collapsed.delete(ad);
+    this.renderIndex();
+    this.wireChrome();
+    this.initViews();
+    this.initLanding();
+    const ss = document.getElementById('supa-sql'); if (ss) ss.textContent = this.supaSQL();
+    this.initBackend();
+    window.addEventListener('hashchange', () => this.route());
+    this.route();
+  }
+  waitFor(c){ return new Promise(r=>{ let n=0; const t=setInterval(()=>{ if(c()||n++>300){ clearInterval(t); r(); } },40); }); }
+  currentId(){ const m=(location.hash||'').match(/#\/(.+)/); return m?decodeURIComponent(m[1]):(this.defs[0]&&this.defs[0].id); }
+
+  // ---------- persistence ----------
+  load() { try { return JSON.parse(localStorage.getItem(this.KEY)) || {}; } catch (e) { return {}; } }
+  save() { try { localStorage.setItem(this.KEY, JSON.stringify(this.db)); this.flashSaved(); } catch (e) {} }
+  flashSaved() {
+    const s = document.getElementById('saved'); if (!s) return;
+    s.style.opacity = '0.4'; clearTimeout(this._st);
+    this._st = setTimeout(() => { s.style.opacity = '1'; }, 180);
+  }
+
+  // ---------- routing ----------
+  route() {
+    const h = location.hash || '';
+    const m = h.match(/#\/(.+)/);
+    const id = m ? decodeURIComponent(m[1]) : '';
+    if (id === '' || id === 'welcome') { this.showLanding(); return; }
+    this.hideLanding();
+    const v = document.getElementById('form');
+    if (v) { v.classList.remove('gallery-mode'); v.classList.remove('planner-mode'); }
+    if (id === 'gallery') {
+      this._activeDef = null;
+      document.querySelectorAll('.side a.item').forEach(a => a.classList.remove('active'));
+      if (v) v.classList.add('gallery-mode');
+      this.renderGallery();
+      return;
+    }
+    if (id === 'planner' || id.indexOf('planner/') === 0) {
+      this._activeDef = null;
+      document.querySelectorAll('.side a.item').forEach(a => a.classList.remove('active'));
+      if (v) v.classList.add('planner-mode');
+      this.renderPlanner(id.indexOf('/') >= 0 ? id.split('/')[1] : '');
+      return;
+    }
+    const def = this.defs.find(d => d.id === id) || this.defs[0];
+    this._activeDef = def;
+    this.renderForm(def);
+    document.querySelectorAll('.side a.item').forEach(a => a.classList.toggle('active', a.dataset.id === def.id));
+    const grp = document.querySelector('.side-group[data-g="' + def.d + '"]');
+    if (grp) { grp.classList.remove('collapsed'); if (this.collapsed) this.collapsed.delete(def.d); }
+    if (this.user) this.ensureLoaded(def.id).then(() => { if (this._activeDef === def) this.renderForm(def); });
+  }
+
+  // ---------- index ----------
+  renderIndex() {
+    const wrap = document.getElementById('index');
+    const built = new Set(this.defs.map(d => d.id));
+    const ALL = this.allCatalog();
+    const active = this.currentId();
+    let html = '';
+    this.domains.forEach((dom, di) => {
+      const items = ALL.filter(x => x.d === di);
+      if (!items.length) return;
+      const nb = items.filter(x => built.has(x.id)).length;
+      const collapsed = this.collapsed.has(di) ? ' collapsed' : '';
+      html += '<div class="side-group' + collapsed + '" data-g="' + di + '">' +
+        '<div class="side-ghead" data-toggle="' + di + '"><span class="gname">' + this.esc(dom) + '</span>' +
+        '<span class="gmeta"><span class="gcount">' + nb + '/' + items.length + '</span><span class="chev">▾</span></span></div>' +
+        '<div class="side-gbody">' +
+        items.map(it => {
+          const on = built.has(it.id);
+          return '<a class="item' + (on ? '' : ' disabled') + (it.id === active ? ' active' : '') + '" data-id="' + it.id +
+            '" title="' + this.esc(it.code) + '" data-search="' + this.esc((it.code + ' ' + it.title).toLowerCase()) + '" href="' + (on ? '#/' + it.id : 'javascript:void 0') + '">' +
+            '<span class="tt">' + this.esc(it.title) + '</span></a>';
+        }).join('') +
+        '</div></div>';
+    });
+    wrap.innerHTML = html;
+  }
+  applySearch(q) {
+    q = (q || '').trim().toLowerCase();
+    document.querySelectorAll('.side-group').forEach(g => {
+      let any = false;
+      g.querySelectorAll('.item').forEach(a => {
+        const hit = !q || (a.dataset.search || '').indexOf(q) >= 0;
+        a.style.display = hit ? '' : 'none'; if (hit) any = true;
+      });
+      g.style.display = any ? '' : 'none';
+      if (q) g.classList.remove('collapsed');
+    });
+  }
+
+  // ---------- views: guidance toggle + gallery ----------
+  initViews() {
+    const gb = document.getElementById('btn-gallery');
+    if (gb) gb.onclick = () => { location.hash = '#/gallery'; };
+    const pb = document.getElementById('btn-planner');
+    if (pb) pb.onclick = () => { location.hash = '#/planner'; };
+    const sb = document.querySelector('.side-brand');
+    if (sb) { sb.style.cursor = 'pointer'; sb.title = 'Open the gallery'; sb.onclick = () => { location.hash = '#/gallery'; }; }
+    this.lean = localStorage.getItem('qq_forms_lean') === '1';
+    const apply = () => {
+      const w = document.getElementById('form');
+      if (w && !w.classList.contains('gallery-mode')) w.classList.toggle('lean', this.lean);
+      const b = document.getElementById('btn-guide');
+      if (b) { b.textContent = this.lean ? 'Show guidance' : 'Hide guidance'; b.classList.toggle('primary', this.lean); }
+    };
+    this._applyLean = apply; apply();
+    const tb = document.getElementById('btn-guide');
+    if (tb) tb.onclick = () => { this.lean = !this.lean; try { localStorage.setItem('qq_forms_lean', this.lean ? '1' : '0'); } catch (e) {} apply(); };
+  }
+  renderGallery() {
+    document.getElementById('crumbs').innerHTML = '<b>Gallery</b> &nbsp;/&nbsp; all ' + this.defs.length + ' forms';
+    let h = '<div class="gal-head"><h1>Forms Gallery</h1><p>Every document type in the Glossary by Domain. Pick one to start filling it in — each is editable, auto-saving, and carries an example for every field.</p></div>';
+    const ALL = this.allCatalog();
+    this.domains.forEach((dom, di) => {
+      const items = ALL.filter(x => x.d === di);
+      if (!items.length) return;
+      h += '<div class="gal-dom"><span class="gd-name">' + this.esc(dom) + '</span><span class="gd-count">' + items.length + ' forms</span></div>';
+      h += '<div class="gal-grid">' + items.map(it => {
+        const def = this.defs.find(d => d.id === it.id);
+        const purpose = def ? def.purpose : '';
+        const nsec = def ? def.sections.length : 0;
+        return '<a class="gcard" href="#/' + it.id + '">' +
+          '<span class="gc-code">' + this.esc(it.code) + '</span>' +
+          '<span class="gc-title">' + this.esc(it.title) + '</span>' +
+          '<span class="gc-purpose">' + this.esc(purpose) + '</span>' +
+          '<span class="gc-foot"><span>' + nsec + ' section' + (nsec === 1 ? '' : 's') + '</span><span class="arr">\u2192</span></span></a>';
+      }).join('') + '</div>';
+    });
+    const v = document.getElementById('form'); v.innerHTML = h; v.scrollTop = 0;
+  }
+
+  // ---------- planner (PMBOK dashboard) ----------
+  pRag(r){ const w={green:'On track',amber:'Watch',red:'At risk'}; return '<span class="rag '+r+'"><span class="d"></span>'+(w[r]||'On track')+'</span>'; }
+  pRiskColor(s){ return s>=16?'#C2603F':(s>=10?'#B98A22':'#8A8A86'); }
+  pKpi(l,v,d,cls){ return '<div class="kpi"><div class="kl">'+l+'</div><div class="kv">'+v+'</div>'+(d?'<div class="kd '+(cls||'')+'">'+d+'</div>':'')+'</div>'; }
+  pMean(a){ return a.length ? a.reduce((x,y)=>x+y,0)/a.length : 0; }
+  scaleNum(v){ if(v==null||v==='')return 3; const n=parseFloat(v); if(!isNaN(n))return Math.max(1,Math.min(5,Math.round(n))); const s=String(v).toLowerCase(); if(/crit|very high|vhigh/.test(s))return 5; if(/high/.test(s))return 4; if(/med|mod/.test(s))return 3; if(/very low|negl/.test(s))return 1; if(/low|minor/.test(s))return 2; return 3; }
+
+  getSampleData(){
+    const projects=[
+      { code:'ATL', name:'Atlas Platform Migration', phase:'Execution', pct:62, rag:'amber', pm:'D. Okafor', cpi:0.97, spi:1.02, bac:1.8, spent:1.16, risks:3, note:'Cutover dry run scheduled; data mapping complete.' },
+      { code:'ORN', name:'Orion Data Lake', phase:'Planning', pct:28, rag:'green', pm:'S. Reyes', cpi:1.04, spi:0.98, bac:1.1, spent:0.30, risks:1, note:'Ingestion architecture finalized; on plan.' },
+      { code:'HEL', name:'Helix Compliance Uplift', phase:'Execution', pct:45, rag:'red', pm:'M. Lindqvist', cpi:0.88, spi:0.90, bac:2.4, spent:1.20, risks:5, note:'Audit gate at risk; vendor SLA pressure.' },
+      { code:'VEG', name:'Vega Mobile Revamp', phase:'Initiation', pct:12, rag:'green', pm:'A. Becker', cpi:1.00, spi:1.00, bac:0.6, spent:0.05, risks:0, note:'Design phase kicking off this week.' },
+      { code:'NOV', name:'Nova Billing Engine', phase:'Closing', pct:94, rag:'green', pm:'J. Park', cpi:1.01, spi:1.03, bac:1.5, spent:1.44, risks:1, note:'UAT passed; preparing go-live.' }
+    ];
+    const risks=[
+      { n:'Regulatory submission slips past deadline', cat:'Compliance', l:5, i:4, owner:'M. Lindqvist', status:'Open' },
+      { n:'Data migration corruption on cutover', cat:'Technical', l:4, i:4, owner:'D. Okafor', status:'Open' },
+      { n:'Key vendor SLA breach', cat:'Procurement', l:3, i:4, owner:'M. Lindqvist', status:'Mitigating' },
+      { n:'Schema churn delays ingestion', cat:'Schedule', l:3, i:3, owner:'S. Reyes', status:'Open' },
+      { n:'Resource contention with Nova', cat:'Resource', l:2, i:4, owner:'D. Okafor', status:'Watching' },
+      { n:'Budget over-run on Helix uplift', cat:'Cost', l:3, i:2, owner:'M. Lindqvist', status:'Mitigating' }
+    ];
+    risks.forEach(r=>{ r.sc=r.l*r.i; r.m=r.cat+' · '+r.owner; });
+    risks.sort((a,b)=>b.sc-a.sc);
+    const change={ open:4, pending:2, approved:7, recent:[
+      { code:'CR-114', desc:'Helix — extend audit scope', status:'Pending' },
+      { code:'CR-112', desc:'Atlas — add rollback window', status:'Approved' },
+      { code:'CR-109', desc:'Nova — defer reporting module', status:'Rejected' } ] };
+    const status={ reports:5, onTrack:3, watch:1, atRisk:1 };
+    const kas=[['Integration','green'],['Scope','amber'],['Schedule','amber'],['Cost','red'],['Quality','green'],['Resource','green'],['Communications','green'],['Risk','red'],['Procurement','green'],['Stakeholder','amber']];
+    const milestones=[
+      { d:'Jun 24', n:'Cutover dry run', p:'Atlas', s:'risk', baseline:'Jun 20', forecast:'Jun 24', slip:4 },
+      { d:'Jul 02', n:'Data model sign-off', p:'Orion', s:'ok', baseline:'Jul 02', forecast:'Jul 02', slip:0 },
+      { d:'Jul 09', n:'Audit readiness gate', p:'Helix', s:'risk', baseline:'Jul 01', forecast:'Jul 09', slip:8 },
+      { d:'Jul 15', n:'Go-live', p:'Nova', s:'ok', baseline:'Jul 14', forecast:'Jul 15', slip:1 },
+      { d:'Jul 22', n:'Design baseline', p:'Vega', s:'ok', baseline:'Jul 22', forecast:'Jul 22', slip:0 }
+    ];
+    const team=[['Engineering',14.0],['Data & Analytics',6.5],['Quality & Compliance',4.0],['Product',3.5],['PMO',2.0]];
+    const accomplishments=['Atlas — completed data mapping for 14 source systems','Nova — passed UAT with zero P1 defects','Orion — finalized ingestion architecture'];
+    const nextSteps=['Helix — submit audit evidence package','Atlas — execute cutover dry run','Vega — lock the design baseline'];
+    const costCategories=[['Labor',2.60],['Vendor',1.00],['Materials',0.35],['Other',0.20]];
+    const changeLog=[
+      { code:'CR-114', title:'Helix — extend audit scope', type:'Scope', status:'Pending', cost:'+$80k', sched:'+5d' },
+      { code:'CR-112', title:'Atlas — add rollback window', type:'Schedule', status:'Approved', cost:'+$15k', sched:'+2d' },
+      { code:'CR-110', title:'Orion — add data-quality checks', type:'Quality', status:'Approved', cost:'+$40k', sched:'0d' },
+      { code:'CR-109', title:'Nova — defer reporting module', type:'Scope', status:'Rejected', cost:'-$60k', sched:'-10d' },
+      { code:'CR-107', title:'Atlas — upgrade message broker', type:'Technical', status:'Approved', cost:'+$25k', sched:'+1d' },
+      { code:'CR-103', title:'Helix — additional control evidence', type:'Compliance', status:'Pending', cost:'+$30k', sched:'+3d' }
+    ];
+    const stakeholders=[
+      { name:'CFO — R. Adeyemi', role:'Sponsor', influence:'High', interest:'High', eng:'green' },
+      { name:'Head of Compliance', role:'Approver', influence:'High', interest:'High', eng:'amber' },
+      { name:'IT Operations', role:'Implementer', influence:'Medium', interest:'High', eng:'green' },
+      { name:'AP Team Lead', role:'End user', influence:'Low', interest:'High', eng:'green' },
+      { name:'ERP Vendor', role:'Supplier', influence:'Medium', interest:'Medium', eng:'amber' },
+      { name:'Internal Audit', role:'Oversight', influence:'High', interest:'Medium', eng:'red' }
+    ];
+    const lessons=[
+      { lesson:'Early sandbox access prevents test compression', cat:'Schedule', rec:'Secure vendor sandbox in week 1', status:'Adopted' },
+      { lesson:'Shadow-mode rollout caught two prod bugs', cat:'Quality', rec:'Make shadow mode standard for cutovers', status:'Adopted' },
+      { lesson:'Ambiguous CR criteria slowed approvals', cat:'Change', rec:'Add weighted scoring to the CR template', status:'Open' },
+      { lesson:'Stakeholder map missed Internal Audit', cat:'Stakeholder', rec:'Review RACI at each phase gate', status:'Open' }
+    ];
+    const closureItems=[
+      { item:'Final deliverables accepted', done:true },
+      { item:'Contracts & POs closed', done:true },
+      { item:'Documentation archived', done:true },
+      { item:'Lessons learned captured', done:true },
+      { item:'Resources released', done:false },
+      { item:'Benefits review scheduled', done:false }
+    ];
+    return { source:'sample', projects, risks, change, status, kas, milestones, team, accomplishments, nextSteps,
+      costCategories, changeLog, stakeholders, lessons, closureItems,
+      openRisks:risks.length, critical:risks.filter(r=>r.sc>=16).length };
+  }
+
+  async ensurePlannerData(force, projId){
+    projId = projId || '';
+    if(this._planner && !force && this._plannerKey===projId) return this._planner;
+    const data=this.getSampleData();
+    if(this.user && this.client){
+      let live=false;
+      try{
+        const r=await this.client.from('projects').select('*').order('created_at');
+        if(!r.error && r.data && r.data.length){
+          data.projects=r.data.map(p=>{ const pct=+p.pct||0, bac=+p.bac||0, spent=+p.spent||0; return { id:p.id, code:p.code||'—', name:p.name||'Untitled project', phase:p.phase||'—', pct, rag:p.status||'green', pm:p.pm||'—', bac, spent, cpi:spent>0?(pct/100*bac)/spent:1, spi:1.0, risks:0, note:'' }; });
+          live=true;
+        }
+      }catch(e){}
+      try{
+        const def=this.defs.find(d=>d.id==='risk_register'); const sec=def&&def.sections.find(s=>s.type==='table');
+        if(def&&sec){ const C=this.colsFor(def); const cm=C.child[sec.key]; const t=this.tname(def); const ct=t+'_'+this.snake(sec.key);
+          let pq=this.client.from(t).select('id'); if(projId) pq=pq.eq('project_id',projId);
+          const pr=await pq;
+          if(!pr.error && pr.data){ const ids=pr.data.map(x=>x.id);
+            if(ids.length){
+              const r=await this.client.from(ct).select('*').in('parent_id',ids);
+              if(!r.error && r.data){ const rk=r.data.map(row=>{ const l=this.scaleNum(row[cm.likelihood]), i=this.scaleNum(row[cm.impact]); const o=row[cm.owner]||'Unassigned'; return { n:row[cm.risk]||'Untitled risk', cat:'Risk', l, i, sc:l*i, owner:o, status:'Open', m:'Risk Register · '+o }; }).sort((a,b)=>b.sc-a.sc); data.risks=rk; data.openRisks=rk.length; data.critical=rk.filter(x=>x.sc>=16).length; live=true; }
+            } else if(projId){ data.risks=[]; data.openRisks=0; data.critical=0; live=true; }
+          }
+        }
+      }catch(e){}
+      try{
+        const def=this.defs.find(d=>d.id==='change_request');
+        if(def){ const C=this.colsFor(def); const t=this.tname(def); const sCol=C.meta['status'], cCol=C.meta['cr'], dCol=C.sec['change_description'];
+          let q=this.client.from(t).select('*').order('updated_at',{ascending:false}); if(projId) q=q.eq('project_id',projId);
+          const r=await q;
+          if(!r.error && r.data && (r.data.length || projId)){
+            let open=0,pending=0,approved=0; const recent=[];
+            r.data.forEach(row=>{ const s=(row[sCol]||'').toLowerCase(); if(/appro/.test(s))approved++; else if(/pend|cab|review/.test(s))pending++; else open++; if(recent.length<3) recent.push({ code:row[cCol]||'CR', desc:(row[dCol]||'(no description)').slice(0,52), status:row[sCol]||'Open' }); });
+            data.change={open,pending,approved,recent}; live=true;
+          }
+        }
+      }catch(e){}
+      try{
+        const def=this.defs.find(d=>d.id==='status_report');
+        if(def){ const C=this.colsFor(def); const t=this.tname(def); const ragCol=C.meta['rag'];
+          let q=this.client.from(t).select('*').order('updated_at',{ascending:false}); if(projId) q=q.eq('project_id',projId);
+          const r=await q;
+          if(!r.error && r.data && (r.data.length || projId)){
+            let on=0,watch=0,risk=0; r.data.forEach(row=>{ const s=(row[ragCol]||'').toLowerCase(); if(/red|off|at risk/.test(s))risk++; else if(/amber|yellow|watch/.test(s))watch++; else on++; });
+            data.status={reports:r.data.length,onTrack:on,watch,atRisk:risk}; live=true;
+          }
+        }
+      }catch(e){}
+      data.source=live?'live':'sample';
+    }
+    this._allProjects = data.projects.slice();
+    if(projId) data.projects = data.projects.filter(p=>String(p.id||p.code)===String(projId));
+    this._plannerKey = projId; this._planner=data; return data;
+  }
+
+  plannerHead(active, title, sub, data){
+    const areas=[['Portfolio',''],['Status','status'],['Schedule','schedule'],['Cost','cost'],['Risk','risk'],['Change','change'],['People','people'],['Closure','closing']];
+    const built={ '':1, 'status':1, 'schedule':1, 'risk':1, 'cost':1, 'change':1, 'people':1, 'closing':1 };
+    const tabs=areas.map(([label,slug])=>{
+      if(built[slug]) return '<a class="psub'+(slug===active?' active':'')+'" href="#/planner'+(slug?'/'+slug:'')+'">'+label+'</a>';
+      return '<span class="psub disabled" title="Coming soon">'+label+'</span>';
+    }).join('');
+    const banner = data.source==='live'
+      ? '<span class="dsrc live">● Live — from your submissions</span>'
+      : '<span class="dsrc">○ Sample data'+(this.user?' — add a project to go live':' — sign in to go live')+'</span>';
+    const all=this._allProjects||data.projects||[];
+    const filter = all.length ? '<select id="plnr-proj" class="plnr-proj"><option value="">All projects</option>'+all.map(p=>{ const vv=p.id||p.code; return '<option value="'+vv+'"'+(String(vv)===String(this._projFilter||'')?' selected':'')+'>'+this.esc(p.name)+'</option>'; }).join('')+'</select>' : '';
+    return '<div class="dash-head"><div><h1>'+title+'</h1><p>'+sub+'</p></div><div style="text-align:right">'+banner+filter+'<div class="asof">As of 19 Jun 2026</div></div></div>'+
+      '<div class="planner-sub">'+tabs+'</div>';
+  }
+
+  wirePlannerControls(){
+    const sel=document.getElementById('plnr-proj');
+    if(sel) sel.onchange=()=>{ this._projFilter=sel.value||''; this.ensurePlannerData(true,this._projFilter).then(()=>this.renderPlanner(this._plannerArea)); };
+    const b=document.getElementById('np-add'); if(b) b.onclick=()=>this.addProject();
+  }
+
+  async renderPlanner(area){
+    area = area || ''; this._plannerArea = area;
+    const data = await this.ensurePlannerData(false, this._projFilter);
+    if(area==='status') this.renderStatus(data);
+    else if(area==='risk') this.renderRisk(data);
+    else if(area==='schedule') this.renderSchedule(data);
+    else if(area==='cost') this.renderCost(data);
+    else if(area==='change') this.renderChange(data);
+    else if(area==='people') this.renderPeople(data);
+    else if(area==='closing') this.renderClosure(data);
+    else this.renderPortfolio(data);
+    this.wirePlannerControls();
+  }
+
+  renderPortfolio(data){
+    document.getElementById('crumbs').innerHTML = '<b>Project Planner</b> &nbsp;/&nbsp; Portfolio Overview';
+    const ps=data.projects, risks=data.risks, change=data.change;
+    const avgPct=Math.round(this.pMean(ps.map(p=>p.pct)));
+    const cpi=this.pMean(ps.map(p=>p.cpi)), spi=this.pMean(ps.map(p=>p.spi));
+    const budget=ps.reduce((a,p)=>a+p.bac,0);
+    let h = this.plannerHead('', 'Project Portfolio', 'A PMBOK-aligned portfolio dashboard — health, schedule, cost, and risk across active projects.', data) +
+      '<div class="kpi-row">' +
+        this.pKpi('Active Projects', String(ps.length)) +
+        this.pKpi('Avg % Complete', avgPct+'%') +
+        this.pKpi('Portfolio CPI', cpi.toFixed(2), cpi<1?'▼ cost over-run':'▲ on budget', cpi<1?'down':'up') +
+        this.pKpi('Portfolio SPI', spi.toFixed(2), spi<1?'▼ behind plan':'▲ on schedule', spi<1?'down':'up') +
+        this.pKpi('Open Risks', String(data.openRisks), data.critical+' critical', 'down') +
+        this.pKpi('Portfolio Budget', '$'+budget.toFixed(1)+'M') +
+      '</div>';
+    if(this.user){
+      h += '<div class="dash-card full np-card"><div class="dc-h"><h3>Add a project</h3><span class="more">Saved privately to your account</span></div>' +
+        '<div class="np-grid">' +
+          '<input id="np-name" placeholder="Project name">' +
+          '<input id="np-code" placeholder="Code">' +
+          '<select id="np-phase"><option>Initiation</option><option>Planning</option><option selected>Execution</option><option>Monitoring</option><option>Closing</option></select>' +
+          '<input id="np-pct" type="number" min="0" max="100" placeholder="% done">' +
+          '<select id="np-status"><option value="green">On track</option><option value="amber">Watch</option><option value="red">At risk</option></select>' +
+          '<input id="np-pm" placeholder="Project manager">' +
+          '<input id="np-bac" type="number" step="0.1" placeholder="Budget $M">' +
+          '<button class="btn primary" id="np-add">Add</button>' +
+        '</div></div>';
+    }
+    h += '<div class="dash-card full"><div class="dc-h"><h3>Active Projects</h3><span class="more">Phase · Progress · CPI / SPI · Budget · Risk</span></div>' +
+        '<table class="ptab"><thead><tr><th>Project</th><th>Phase</th><th>Progress</th><th>Status</th><th>CPI</th><th>SPI</th><th>Budget</th><th>Risks</th><th>PM</th></tr></thead><tbody>' +
+        (ps.length?ps.map(p => '<tr>' +
+          '<td><div class="pname">' + p.name + '</div><div class="pcode">' + p.code + '</div></td>' +
+          '<td>' + p.phase + '</td>' +
+          '<td><div style="display:flex;align-items:center;gap:8px"><div class="pbar" style="width:84px"><i style="width:' + p.pct + '%"></i></div><span style="font-family:\'IBM Plex Mono\';font-size:10px;color:var(--muted)">' + p.pct + '%</span></div></td>' +
+          '<td>' + this.pRag(p.rag) + '</td>' +
+          '<td style="font-family:\'IBM Plex Mono\';font-size:12px;color:' + (p.cpi < 1 ? '#C2603F' : '#4C8A50') + '">' + p.cpi.toFixed(2) + '</td>' +
+          '<td style="font-family:\'IBM Plex Mono\';font-size:12px;color:' + (p.spi < 1 ? '#C2603F' : '#4C8A50') + '">' + p.spi.toFixed(2) + '</td>' +
+          '<td style="font-family:\'IBM Plex Mono\';font-size:11px">$' + p.bac.toFixed(1) + 'M</td>' +
+          '<td>' + p.risks + '</td><td>' + p.pm + '</td></tr>').join('')
+          : '<tr><td colspan="9" style="color:var(--muted);padding:18px 8px">No projects yet — add one above to start your live portfolio.</td></tr>') +
+        '</tbody></table></div>' +
+      '<div class="dash-grid">' +
+        '<div class="dash-card"><div class="dc-h"><h3>Knowledge-Area Health</h3><span class="more">PMBOK</span></div><div class="ka-grid">' +
+          data.kas.map(k => '<div class="ka"><span class="kan">' + k[0] + '</span>' + this.pRag(k[1]) + '</div>').join('') + '</div></div>' +
+        '<div class="dash-card"><div class="dc-h"><h3>Upcoming Milestones</h3><span class="more">Next 30 days</span></div>' +
+          data.milestones.map(mm => '<div class="tl-row"><div class="tl-date">' + mm.d + '</div><div class="tl-body"><div class="tl-name">' + mm.n + '</div><div class="tl-meta">' + mm.p + '</div></div>' + (mm.s==='risk'?this.pRag('amber'):this.pRag('green')) + '</div>').join('') + '</div>' +
+      '</div>' +
+      '<div class="dash-grid">' +
+        '<div class="dash-card"><div class="dc-h"><h3>Top Open Risks</h3><span class="more">Risk Register · Score = L × I</span></div>' +
+          (risks.length?risks.slice(0,5).map(r => '<div class="risk-row"><div class="risk-score" style="background:' + this.pRiskColor(r.sc) + '">' + r.sc + '</div><div class="risk-body"><div class="risk-name">' + r.n + '</div><div class="risk-meta">' + r.m + '</div></div></div>').join('')
+            : '<div style="color:var(--muted);font-size:12.5px;padding:8px 0">No open risks logged.</div>') + '</div>' +
+        '<div class="dash-card"><div class="dc-h"><h3>Change Control</h3><span class="more">Change Requests</span></div>' +
+          '<div class="cc-stats"><div class="cc-stat"><div class="n">'+change.open+'</div><div class="l">Open</div></div><div class="cc-stat"><div class="n">'+change.pending+'</div><div class="l">Pending CAB</div></div><div class="cc-stat"><div class="n">'+change.approved+'</div><div class="l">Approved</div></div></div>' +
+          '<div style="font-family:\'IBM Plex Mono\';font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;margin:15px 0 2px">Recent</div>' +
+          (change.recent.length?change.recent.map(c=>{ const s=(c.status||'').toLowerCase(); const rg=/appro/.test(s)?'green':(/rej|decl/.test(s)?'red':'amber'); return '<div class="team-row"><span>'+c.code+' · '+c.desc+'</span><span class="rag '+rg+'"><span class="d"></span>'+c.status+'</span></div>'; }).join('')
+            : '<div style="color:var(--muted);font-size:12.5px;padding:6px 0">No change requests yet.</div>') + '</div>' +
+      '</div>' +
+      '<div class="dash-grid">' +
+        '<div class="dash-card"><div class="dc-h"><h3>Cost vs Budget</h3><span class="more">Spent / BAC</span></div>' +
+          (ps.length?ps.map(p => { const r = p.bac>0?p.spent / p.bac:0; const over = r > (p.pct / 100) + 0.08; return '<div class="budget-row"><span class="bn">' + p.name.split(' ')[0] + '</span><div class="bbar"><i style="width:' + Math.round(r * 100) + '%;background:' + (over ? '#C2603F' : 'var(--accent)') + '"></i></div><span class="bv">$' + p.spent.toFixed(2) + 'M / $' + p.bac.toFixed(1) + 'M</span></div>'; }).join('') : '<div style="color:var(--muted);font-size:12.5px;padding:8px 0">—</div>') + '</div>' +
+        '<div class="dash-card"><div class="dc-h"><h3>Team & Resourcing</h3><span class="more">30.0 FTE</span></div>' +
+          data.team.map(t => '<div class="team-row"><span>' + t[0] + '</span><span style="font-family:\'IBM Plex Mono\';font-size:11px;color:var(--muted)">' + t[1].toFixed(1) + ' FTE</span></div>').join('') + '</div>' +
+      '</div>';
+    const v = document.getElementById('form'); v.innerHTML = h; v.scrollTop = 0;
+    const b=document.getElementById('np-add'); if(b) b.onclick=()=>this.addProject();
+  }
+
+  async addProject(){
+    if(!this.client || !this.user) return;
+    const g=id=>document.getElementById(id);
+    const name=(g('np-name').value||'').trim();
+    if(!name){ g('np-name').focus(); return; }
+    const row={ user_id:this.user.id, name, code:(g('np-code').value||'').toUpperCase()||'—', phase:g('np-phase').value, pct:parseInt(g('np-pct').value)||0, status:g('np-status').value, pm:g('np-pm').value||'—', bac:parseFloat(g('np-bac').value)||0, spent:0, updated_at:new Date().toISOString() };
+    const b=g('np-add'); if(b){ b.textContent='Adding…'; b.disabled=true; }
+    const r=await this.client.from('projects').insert(row);
+    if(r.error){ alert('Could not add project: '+r.error.message+'\n\nRun the latest Schema SQL (it now includes a "projects" table).'); if(b){ b.textContent='Add'; b.disabled=false; } return; }
+    await this.ensurePlannerData(true); await this.loadProjects(); this.renderPlanner('');
+  }
+
+  renderStatus(data){
+    document.getElementById('crumbs').innerHTML = '<b>Project Planner</b> &nbsp;/&nbsp; Project Status Report';
+    const ps=data.projects, st=data.status;
+    const avgPct=Math.round(this.pMean(ps.map(p=>p.pct)));
+    const onTimePct=ps.length?Math.round(ps.filter(p=>p.spi>=1).length/ps.length*100):0;
+    const byRag={green:ps.filter(p=>p.rag==='green').length, amber:ps.filter(p=>p.rag==='amber').length, red:ps.filter(p=>p.rag==='red').length};
+    let h = this.plannerHead('status', 'Project Status Report', 'Period health roll-up — RAG status, progress, accomplishments, and next steps.', data) +
+      '<div class="kpi-row">' +
+        this.pKpi('Reports Filed', String(st.reports)) +
+        this.pKpi('On Track', String(st.onTrack), 'green', 'up') +
+        this.pKpi('Watch', String(st.watch), 'amber') +
+        this.pKpi('At Risk', String(st.atRisk), 'red', 'down') +
+        this.pKpi('Avg % Complete', avgPct+'%') +
+        this.pKpi('On-Time', onTimePct+'%') +
+      '</div>' +
+      '<div class="dash-card full"><div class="dc-h"><h3>Status by Project</h3><span class="more">RAG · phase · progress</span></div>' +
+        ps.map(p=>'<div class="proj-status">' +
+          '<div style="flex:1;min-width:0"><div class="pname" style="font-size:14px">'+p.name+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+(p.note||(p.phase+' phase'))+'</div></div>' +
+          '<div class="ps-bar"><div class="pbar"><i style="width:'+p.pct+'%"></i></div><div style="font-family:\'IBM Plex Mono\';font-size:9px;color:var(--muted);margin-top:4px">'+p.pct+'% · '+p.phase+'</div></div>' +
+          '<div style="width:92px;flex:none;text-align:right">'+this.pRag(p.rag)+'</div>' +
+        '</div>').join('') + '</div>' +
+      '<div class="dash-grid">' +
+        '<div class="dash-card"><div class="dc-h"><h3>Recent Accomplishments</h3><span class="more">This period</span></div>' +
+          data.accomplishments.map(a=>'<div class="team-row"><span>'+a+'</span><span class="rag green"><span class="d"></span>Done</span></div>').join('') + '</div>' +
+        '<div class="dash-card"><div class="dc-h"><h3>Upcoming Next Steps</h3><span class="more">Next period</span></div>' +
+          data.nextSteps.map(a=>'<div class="team-row"><span>'+a+'</span></div>').join('') +
+          '<div style="margin-top:12px;display:flex;gap:10px"><div class="stat-pill">'+this.pRag('green')+' '+byRag.green+'</div><div class="stat-pill">'+this.pRag('amber')+' '+byRag.amber+'</div><div class="stat-pill">'+this.pRag('red')+' '+byRag.red+'</div></div>' + '</div>' +
+      '</div>';
+    const v = document.getElementById('form'); v.innerHTML = h; v.scrollTop = 0;
+  }
+
+  renderRisk(data){
+    document.getElementById('crumbs').innerHTML = '<b>Project Planner</b> &nbsp;/&nbsp; Risk Management';
+    const rk=data.risks;
+    const avg=rk.length?(this.pMean(rk.map(r=>r.sc))).toFixed(1):'0';
+    const high=rk.filter(r=>r.sc>=10).length;
+    const cov=rk.length?Math.round(rk.filter(r=>/mitig/i.test(r.status)).length/rk.length*100):0;
+    const exposure=rk.reduce((a,r)=>a+r.sc,0);
+    // 5x5 matrix counts
+    const cell={}; rk.forEach(r=>{ const k=r.i+'-'+r.l; cell[k]=(cell[k]||0)+1; });
+    let matrix='<div class="matrix"><div></div>'+[1,2,3,4,5].map(l=>'<div class="mh">L'+l+'</div>').join('');
+    for(let i=5;i>=1;i--){ matrix+='<div class="axis">I'+i+'</div>'; for(let l=1;l<=5;l++){ const c=cell[i+'-'+l]||0; const sc=i*l; matrix+='<div class="mc" style="background:'+(c?this.pRiskColor(sc):'var(--soft)')+';color:'+(c?'#fff':'var(--faint)')+'">'+(c||'')+'</div>'; } }
+    matrix+='</div>';
+    const cats={}; rk.forEach(r=>{ cats[r.cat]=(cats[r.cat]||0)+1; }); const maxc=Math.max(1,...Object.values(cats));
+    let h = this.plannerHead('risk', 'Risk Management', 'The portfolio risk register — exposure, probability-impact matrix, and mitigation status.', data) +
+      '<div class="kpi-row">' +
+        this.pKpi('Open Risks', String(rk.length)) +
+        this.pKpi('Critical', String(rk.filter(r=>r.sc>=16).length), '≥ 16', 'down') +
+        this.pKpi('High', String(high), '≥ 10') +
+        this.pKpi('Avg Score', avg) +
+        this.pKpi('Mitigating', cov+'%') +
+        this.pKpi('Total Exposure', String(exposure)) +
+      '</div>' +
+      '<div class="dash-grid">' +
+        '<div class="dash-card"><div class="dc-h"><h3>Probability · Impact Matrix</h3><span class="more">Impact ↕ / Likelihood →</span></div>'+matrix+'</div>' +
+        '<div class="dash-card"><div class="dc-h"><h3>Risk by Category</h3><span class="more">Open risks</span></div>' +
+          Object.keys(cats).map(c=>'<div class="catbar"><span class="cn">'+c+'</span><div class="cb"><i style="width:'+Math.round(cats[c]/maxc*100)+'%"></i></div><span class="cv">'+cats[c]+'</span></div>').join('') + '</div>' +
+      '</div>' +
+      '<div class="dash-card full"><div class="dc-h"><h3>Risk Register</h3><span class="more">'+rk.length+' open</span></div>' +
+        '<table class="ptab"><thead><tr><th>Risk</th><th>Category</th><th>L</th><th>I</th><th>Score</th><th>Owner</th><th>Status</th></tr></thead><tbody>' +
+        (rk.length?rk.map(r=>'<tr><td style="max-width:320px"><div class="pname" style="font-size:12.5px;font-weight:500">'+r.n+'</div></td><td>'+r.cat+'</td><td style="font-family:\'IBM Plex Mono\'">'+r.l+'</td><td style="font-family:\'IBM Plex Mono\'">'+r.i+'</td><td><span class="risk-score" style="background:'+this.pRiskColor(r.sc)+';width:26px;height:24px;border-radius:6px;display:inline-flex;font-size:11px">'+r.sc+'</span></td><td>'+r.owner+'</td><td>'+r.status+'</td></tr>').join('')
+          : '<tr><td colspan="7" style="color:var(--muted);padding:18px 8px">No risks logged. Fill in a Risk Register form to populate this.</td></tr>') +
+        '</tbody></table></div>';
+    const v = document.getElementById('form'); v.innerHTML = h; v.scrollTop = 0;
+  }
+
+  renderSchedule(data){
+    document.getElementById('crumbs').innerHTML = '<b>Project Planner</b> &nbsp;/&nbsp; Schedule & Milestones';
+    const ps=data.projects, ms=data.milestones;
+    const atRisk=ms.filter(m=>m.s==='risk').length;
+    const onTime=ms.length?Math.round(ms.filter(m=>m.slip<=0).length/ms.length*100):0;
+    const avgSlip=ms.length?(this.pMean(ms.map(m=>m.slip))).toFixed(1):'0';
+    const spi=this.pMean(ps.map(p=>p.spi));
+    const phasePos={Initiation:10,Planning:30,Execution:60,Monitoring:80,Closing:95};
+    let h = this.plannerHead('schedule', 'Schedule & Milestones', 'Timeline health — milestone slip, schedule variance, and where each project sits in its lifecycle.', data) +
+      '<div class="kpi-row">' +
+        this.pKpi('Milestones', String(ms.length)) +
+        this.pKpi('At Risk', String(atRisk), atRisk?'slipping':'on plan', atRisk?'down':'up') +
+        this.pKpi('On-Time', onTime+'%') +
+        this.pKpi('Avg Slip', avgSlip+'d', avgSlip>0?'behind':'on plan', avgSlip>0?'down':'up') +
+        this.pKpi('Portfolio SPI', spi.toFixed(2), spi<1?'▼ behind':'▲ ahead', spi<1?'down':'up') +
+        this.pKpi('Active', String(ps.length)) +
+      '</div>' +
+      '<div class="dash-card full"><div class="dc-h"><h3>Lifecycle Position</h3><span class="more">% complete across the phase track</span></div>' +
+        ps.map(p=>'<div class="budget-row"><span class="bn" style="width:160px">'+p.name+'</span><div class="bbar" style="height:10px"><i style="width:'+p.pct+'%;background:'+(p.rag==='red'?'#C2603F':(p.rag==='amber'?'#C9962B':'var(--accent)'))+'"></i></div><span class="bv" style="width:120px">'+p.phase+' · '+p.pct+'%</span></div>').join('') + '</div>' +
+      '<div class="dash-card full"><div class="dc-h"><h3>Milestone Schedule</h3><span class="more">Baseline vs forecast</span></div>' +
+        '<table class="ptab"><thead><tr><th>Milestone</th><th>Project</th><th>Baseline</th><th>Forecast</th><th>Slip</th><th>Status</th></tr></thead><tbody>' +
+        ms.map(m=>'<tr><td><div class="pname" style="font-size:13px;font-weight:500">'+m.n+'</div></td><td>'+m.p+'</td><td style="font-family:\'IBM Plex Mono\';font-size:11px">'+(m.baseline||'—')+'</td><td style="font-family:\'IBM Plex Mono\';font-size:11px">'+(m.forecast||m.d)+'</td><td style="font-family:\'IBM Plex Mono\';font-size:11px;color:'+(m.slip>0?'#C2603F':'#4C8A50')+'">'+(m.slip>0?'+'+m.slip+'d':'on time')+'</td><td>'+(m.s==='risk'?this.pRag('amber'):this.pRag('green'))+'</td></tr>').join('') +
+        '</tbody></table></div>';
+    const v = document.getElementById('form'); v.innerHTML = h; v.scrollTop = 0;
+  }
+
+  renderCost(data){
+    document.getElementById('crumbs').innerHTML='<b>Project Planner</b> &nbsp;/&nbsp; Cost & Budget';
+    const ps=data.projects;
+    const BAC=ps.reduce((a,p)=>a+p.bac,0), EV=ps.reduce((a,p)=>a+p.pct/100*p.bac,0), AC=ps.reduce((a,p)=>a+p.spent,0);
+    const CPI=AC>0?EV/AC:1, EAC=CPI>0?BAC/CPI:BAC, VAC=BAC-EAC;
+    const cats=data.costCategories, maxc=Math.max(1,...cats.map(c=>c[1]));
+    let h=this.plannerHead('cost','Cost & Budget','Earned-value performance — BAC, EV / AC, CPI, and forecast at completion across the portfolio.',data)+
+      '<div class="kpi-row">'+
+        this.pKpi('BAC','$'+BAC.toFixed(1)+'M')+this.pKpi('Earned Value','$'+EV.toFixed(2)+'M')+this.pKpi('Actual Cost','$'+AC.toFixed(2)+'M')+
+        this.pKpi('CPI',CPI.toFixed(2),CPI<1?'▼ over budget':'▲ under budget',CPI<1?'down':'up')+
+        this.pKpi('EAC','$'+EAC.toFixed(1)+'M')+this.pKpi('VAC','$'+VAC.toFixed(2)+'M',VAC<0?'over':'under',VAC<0?'down':'up')+
+      '</div>'+
+      '<div class="dash-grid">'+
+        '<div class="dash-card"><div class="dc-h"><h3>Cost by Category</h3><span class="more">Actuals</span></div>'+
+          cats.map(c=>'<div class="catbar"><span class="cn">'+c[0]+'</span><div class="cb"><i style="width:'+Math.round(c[1]/maxc*100)+'%"></i></div><span class="cv">$'+c[1].toFixed(1)+'M</span></div>').join('')+'</div>'+
+        '<div class="dash-card"><div class="dc-h"><h3>Budget Burn</h3><span class="more">Spent / BAC</span></div>'+
+          ps.map(p=>{ const r=p.bac>0?p.spent/p.bac:0; const over=r>(p.pct/100)+0.08; return '<div class="budget-row"><span class="bn">'+p.name.split(' ')[0]+'</span><div class="bbar"><i style="width:'+Math.round(r*100)+'%;background:'+(over?'#C2603F':'var(--accent)')+'"></i></div><span class="bv">$'+p.spent.toFixed(2)+'M / $'+p.bac.toFixed(1)+'M</span></div>'; }).join('')+'</div>'+
+      '</div>'+
+      '<div class="dash-card full"><div class="dc-h"><h3>Earned Value by Project</h3><span class="more">EVM</span></div>'+
+        '<table class="ptab"><thead><tr><th>Project</th><th>BAC</th><th>Actual (AC)</th><th>Earned (EV)</th><th>CPI</th><th>EAC</th><th>VAC</th></tr></thead><tbody>'+
+        ps.map(p=>{ const ev=p.pct/100*p.bac, cpi=p.spent>0?ev/p.spent:1, eac=cpi>0?p.bac/cpi:p.bac, vac=p.bac-eac; return '<tr><td><div class="pname" style="font-size:13px;font-weight:500">'+p.name+'</div></td><td style="font-family:\'IBM Plex Mono\';font-size:11px">$'+p.bac.toFixed(1)+'M</td><td style="font-family:\'IBM Plex Mono\';font-size:11px">$'+p.spent.toFixed(2)+'M</td><td style="font-family:\'IBM Plex Mono\';font-size:11px">$'+ev.toFixed(2)+'M</td><td style="font-family:\'IBM Plex Mono\';font-size:11px;color:'+(cpi<1?'#C2603F':'#4C8A50')+'">'+cpi.toFixed(2)+'</td><td style="font-family:\'IBM Plex Mono\';font-size:11px">$'+eac.toFixed(2)+'M</td><td style="font-family:\'IBM Plex Mono\';font-size:11px;color:'+(vac<0?'#C2603F':'#4C8A50')+'">$'+vac.toFixed(2)+'M</td></tr>'; }).join('')+
+        '</tbody></table></div>';
+    const v=document.getElementById('form'); v.innerHTML=h; v.scrollTop=0;
+  }
+
+  renderChange(data){
+    document.getElementById('crumbs').innerHTML='<b>Project Planner</b> &nbsp;/&nbsp; Change Control';
+    const ch=data.change, log=data.changeLog;
+    const rej=log.filter(c=>/rej|decl/i.test(c.status)).length;
+    const apprRate=(ch.approved+rej)>0?Math.round(ch.approved/(ch.approved+rej)*100):0;
+    const types={}; log.forEach(c=>{ types[c.type]=(types[c.type]||0)+1; }); const maxt=Math.max(1,...Object.values(types));
+    const chip=(s)=>{ const x=(s||'').toLowerCase(); const rg=/appro/.test(x)?'green':(/rej|decl/.test(x)?'red':'amber'); return '<span class="rag '+rg+'"><span class="d"></span>'+s+'</span>'; };
+    let h=this.plannerHead('change','Change Control','The change pipeline — requests by status and type, with cost and schedule impact.',data)+
+      '<div class="kpi-row">'+
+        this.pKpi('Open',String(ch.open))+this.pKpi('Pending CAB',String(ch.pending))+this.pKpi('Approved',String(ch.approved),'green','up')+
+        this.pKpi('Approval Rate',apprRate+'%')+this.pKpi('Avg Cycle','6d')+this.pKpi('Total Logged',String(log.length))+
+      '</div>'+
+      '<div class="dash-grid">'+
+        '<div class="dash-card"><div class="dc-h"><h3>By Status</h3><span class="more">Pipeline</span></div>'+
+          '<div class="cc-stats"><div class="cc-stat"><div class="n">'+ch.open+'</div><div class="l">Open</div></div><div class="cc-stat"><div class="n">'+ch.pending+'</div><div class="l">Pending</div></div><div class="cc-stat"><div class="n">'+ch.approved+'</div><div class="l">Approved</div></div></div></div>'+
+        '<div class="dash-card"><div class="dc-h"><h3>By Type</h3><span class="more">Change class</span></div>'+
+          Object.keys(types).map(t=>'<div class="catbar"><span class="cn">'+t+'</span><div class="cb"><i style="width:'+Math.round(types[t]/maxt*100)+'%"></i></div><span class="cv">'+types[t]+'</span></div>').join('')+'</div>'+
+      '</div>'+
+      '<div class="dash-card full"><div class="dc-h"><h3>Change Log</h3><span class="more">Cost · schedule impact</span></div>'+
+        '<table class="ptab"><thead><tr><th>CR</th><th>Description</th><th>Type</th><th>Cost</th><th>Schedule</th><th>Status</th></tr></thead><tbody>'+
+        log.map(c=>'<tr><td style="font-family:\'IBM Plex Mono\';font-size:11px;color:var(--accent)">'+c.code+'</td><td>'+c.title+'</td><td>'+c.type+'</td><td style="font-family:\'IBM Plex Mono\';font-size:11px">'+c.cost+'</td><td style="font-family:\'IBM Plex Mono\';font-size:11px">'+c.sched+'</td><td>'+chip(c.status)+'</td></tr>').join('')+
+        '</tbody></table></div>';
+    const v=document.getElementById('form'); v.innerHTML=h; v.scrollTop=0;
+  }
+
+  renderPeople(data){
+    document.getElementById('crumbs').innerHTML='<b>Project Planner</b> &nbsp;/&nbsp; Stakeholders & Team';
+    const sh=data.stakeholders, team=data.team;
+    const fte=team.reduce((a,t)=>a+t[1],0), key=sh.filter(s=>s.influence==='High').length;
+    const engaged=Math.round(sh.filter(s=>s.eng==='green').length/sh.length*100), maxf=Math.max(...team.map(t=>t[1]));
+    const engW={green:'Engaged',amber:'Neutral',red:'Resistant'};
+    const echip=(e)=>'<span class="rag '+e+'"><span class="d"></span>'+engW[e]+'</span>';
+    const quad=(inf,hi)=>sh.filter(s=>s.influence===inf&&(hi?s.interest==='High':s.interest!=='High'));
+    const qcard=(title,inf,hi)=>'<div style="border:1px solid var(--rule);border-radius:10px;padding:12px"><div style="font-family:\'IBM Plex Mono\';font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:7px">'+title+'</div>'+(quad(inf,hi).map(s=>'<div style="font-size:11.5px;padding:2px 0">'+s.name+'</div>').join('')||'<div style="font-size:11px;color:var(--faint)">—</div>')+'</div>';
+    let h=this.plannerHead('people','Stakeholders & Team','Power-interest mapping, engagement health, and resourcing across departments.',data)+
+      '<div class="kpi-row">'+
+        this.pKpi('Stakeholders',String(sh.length))+this.pKpi('Key Players',String(key),'high influence')+this.pKpi('Team FTE',fte.toFixed(1))+
+        this.pKpi('Departments',String(team.length))+this.pKpi('Engaged',engaged+'%')+this.pKpi('At Risk',String(sh.filter(s=>s.eng==='red').length),'relationships','down')+
+      '</div>'+
+      '<div class="dash-grid">'+
+        '<div class="dash-card"><div class="dc-h"><h3>Power · Interest Grid</h3><span class="more">Influence ↕ / Interest →</span></div>'+
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+qcard('Keep Satisfied','High',false)+qcard('Manage Closely','High',true)+qcard('Monitor','Low',false)+qcard('Keep Informed','Low',true)+'</div></div>'+
+        '<div class="dash-card"><div class="dc-h"><h3>Team by Department</h3><span class="more">'+fte.toFixed(1)+' FTE</span></div>'+
+          team.map(t=>'<div class="catbar"><span class="cn">'+t[0]+'</span><div class="cb"><i style="width:'+Math.round(t[1]/maxf*100)+'%"></i></div><span class="cv">'+t[1].toFixed(1)+'</span></div>').join('')+'</div>'+
+      '</div>'+
+      '<div class="dash-card full"><div class="dc-h"><h3>Stakeholder Register</h3><span class="more">'+sh.length+' stakeholders</span></div>'+
+        '<table class="ptab"><thead><tr><th>Stakeholder</th><th>Role</th><th>Influence</th><th>Interest</th><th>Engagement</th></tr></thead><tbody>'+
+        sh.map(s=>'<tr><td><div class="pname" style="font-size:13px;font-weight:500">'+s.name+'</div></td><td>'+s.role+'</td><td>'+s.influence+'</td><td>'+s.interest+'</td><td>'+echip(s.eng)+'</td></tr>').join('')+
+        '</tbody></table></div>';
+    const v=document.getElementById('form'); v.innerHTML=h; v.scrollTop=0;
+  }
+
+  renderClosure(data){
+    document.getElementById('crumbs').innerHTML='<b>Project Planner</b> &nbsp;/&nbsp; Lessons & Closure';
+    const items=data.closureItems, lessons=data.lessons;
+    const done=items.filter(i=>i.done).length, pct=Math.round(done/items.length*100);
+    const adopted=lessons.filter(l=>/adopt/i.test(l.status)).length, open=lessons.filter(l=>/open/i.test(l.status)).length;
+    const cats={}; lessons.forEach(l=>cats[l.cat]=(cats[l.cat]||0)+1);
+    let h=this.plannerHead('closing','Lessons & Closure','Closeout readiness and the lessons-learned register feeding the next project.',data)+
+      '<div class="kpi-row">'+
+        this.pKpi('Closure Complete',pct+'%')+this.pKpi('Checklist',done+'/'+items.length)+this.pKpi('Lessons',String(lessons.length))+
+        this.pKpi('Adopted',String(adopted),'green','up')+this.pKpi('Open Lessons',String(open))+this.pKpi('Signed-off Reports','12')+
+      '</div>'+
+      '<div class="dash-grid">'+
+        '<div class="dash-card"><div class="dc-h"><h3>Closure Checklist</h3><span class="more">'+done+' of '+items.length+'</span></div>'+
+          '<div style="margin-bottom:12px"><div class="pbar" style="height:8px"><i style="width:'+pct+'%"></i></div></div>'+
+          items.map(i=>'<div class="team-row"><span>'+i.item+'</span><span class="rag '+(i.done?'green':'amber')+'"><span class="d"></span>'+(i.done?'Done':'Open')+'</span></div>').join('')+'</div>'+
+        '<div class="dash-card"><div class="dc-h"><h3>Lessons by Status</h3><span class="more">Knowledge transfer</span></div>'+
+          '<div class="cc-stats"><div class="cc-stat"><div class="n">'+adopted+'</div><div class="l">Adopted</div></div><div class="cc-stat"><div class="n">'+open+'</div><div class="l">Open</div></div><div class="cc-stat"><div class="n">'+lessons.length+'</div><div class="l">Total</div></div></div>'+
+          '<div style="font-family:\'IBM Plex Mono\';font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;margin:15px 0 2px">By area</div>'+
+          Object.keys(cats).map(c=>'<div class="team-row"><span>'+c+'</span><span style="font-family:\'IBM Plex Mono\';font-size:11px;color:var(--muted)">'+cats[c]+'</span></div>').join('')+'</div>'+
+      '</div>'+
+      '<div class="dash-card full"><div class="dc-h"><h3>Lessons Learned</h3><span class="more">'+lessons.length+' captured</span></div>'+
+        '<table class="ptab"><thead><tr><th>Lesson</th><th>Area</th><th>Recommendation</th><th>Status</th></tr></thead><tbody>'+
+        lessons.map(l=>'<tr><td style="max-width:260px"><div style="font-size:12.5px">'+l.lesson+'</div></td><td>'+l.cat+'</td><td style="max-width:240px;font-size:12px;color:var(--muted)">'+l.rec+'</td><td><span class="rag '+(/adopt/i.test(l.status)?'green':'amber')+'"><span class="d"></span>'+l.status+'</span></td></tr>').join('')+
+        '</tbody></table></div>';
+    const v=document.getElementById('form'); v.innerHTML=h; v.scrollTop=0;
+  }
+
+  // ---------- landing ----------
+  initLanding() {
+    this._lmode = 'in';
+    const setMode = (mode) => {
+      this._lmode = mode;
+      document.querySelectorAll('.lnd-tab').forEach(t => t.classList.toggle('active', t.dataset.lt === mode));
+      const pw = document.getElementById('l-pw'); if (pw) pw.setAttribute('autocomplete', mode === 'up' ? 'new-password' : 'current-password');
+      const sb = document.getElementById('l-submit'); if (sb) sb.textContent = mode === 'up' ? 'Create account' : 'Sign in';
+      this.landingMsg('');
+    };
+    document.querySelectorAll('.lnd-tab').forEach(t => t.onclick = () => setMode(t.dataset.lt));
+    const sub = document.getElementById('l-submit'); if (sub) sub.onclick = () => this.landingAuth(this._lmode);
+    const mag = document.getElementById('l-magic'); if (mag) mag.onclick = () => this.landingAuth('magic');
+    const br = document.getElementById('l-browse'); if (br) br.onclick = () => { location.hash = '#/gallery'; };
+    const co = document.getElementById('l-continue'); if (co) co.onclick = () => { location.hash = '#/gallery'; };
+    const so = document.getElementById('l-signout'); if (so) so.onclick = () => this.signOut();
+    ['l-email', 'l-pw'].forEach(id => { const el = document.getElementById(id); if (el) el.onkeydown = (e) => { if (e.key === 'Enter') this.landingAuth(this._lmode); }; });
+    this.startPreviewRotation();
+  }
+  startPreviewRotation() {
+    if (this._previewTimer) return;
+    const el = document.getElementById('lnd-preview'); if (!el) return;
+    const P = [
+      { code: 'PRD', title: 'Product Requirements', secs: [
+        { l: 'Problem statement & evidence', eg: 'CSV imports fail ~12% of the time.', lines: ['', 'short'] },
+        { l: 'Goals & success metrics', lines: [''] } ] },
+      { code: 'Runbook', title: 'Runbook', secs: [
+        { l: 'When to use', eg: 'Alert: invoice queue depth > 5k for 10 min.', lines: ['', 'short'] },
+        { l: 'Steps', lines: [''] } ] },
+      { code: 'Postmortem', title: 'Postmortem / RCA', secs: [
+        { l: 'Summary & impact', eg: 'Posting halted 40 min after a gateway change.', lines: ['', 'short'] },
+        { l: 'Root cause', lines: [''] } ] }
+    ];
+    const render = (n) => {
+      const p = P[n];
+      el.innerHTML = '<div class="lp-kick">Form · ' + this.esc(p.code) + '</div><div class="lp-title">' + this.esc(p.title) + '</div>' +
+        p.secs.map(s => '<div class="lp-sec"><div class="lp-sl">' + this.esc(s.l) + '</div>' +
+          (s.eg ? '<div class="lp-eg"><b>e.g.</b> ' + this.esc(s.eg) + '</div>' : '') +
+          s.lines.map(c => '<div class="lp-line' + (c ? ' ' + c : '') + '"></div>').join('') + '</div>').join('');
+    };
+    let i = 0; render(0); el.style.opacity = '1';
+    this._previewTimer = setInterval(() => {
+      el.style.opacity = '0';
+      setTimeout(() => { i = (i + 1) % P.length; render(i); el.style.opacity = '1'; }, 560);
+    }, 4200);
+  }
+  landingMsg(t, err) { const m = document.getElementById('l-msg'); if (m) { m.textContent = t || ''; m.style.color = err ? '#9A6B1F' : 'var(--muted)'; } }
+  async landingAuth(mode) {
+    if (!this.client) { this.landingMsg('Connecting to the database — try again in a moment.', 1); return; }
+    const email = (document.getElementById('l-email').value || '').trim();
+    const pw = document.getElementById('l-pw').value || '';
+    if (!email) { this.landingMsg('Enter your email.', 1); return; }
+    if (mode !== 'magic' && !pw) { this.landingMsg('Enter a password.', 1); return; }
+    try {
+      if (mode === 'magic') { const { error } = await this.client.auth.signInWithOtp({ email }); if (error) throw error; this.landingMsg('Check your email for a sign-in link.'); return; }
+      if (mode === 'up') { const { error } = await this.client.auth.signUp({ email, password: pw }); if (error) throw error; this.landingMsg('Account created — signing you in…'); return; }
+      const { error } = await this.client.auth.signInWithPassword({ email, password: pw }); if (error) throw error;
+      this.landingMsg('Signed in — taking you in…');
+    } catch (e) { this.landingMsg(e.message || String(e), 1); }
+  }
+  showLanding() {
+    const l = document.getElementById('landing'); if (l) l.classList.remove('hidden');
+    const signed = !!this.user;
+    const auth = document.getElementById('lnd-auth'); const sg = document.getElementById('lnd-signed');
+    const tabs = document.querySelector('.lnd-tabs');
+    if (auth) auth.style.display = signed ? 'none' : '';
+    if (sg) sg.style.display = signed ? '' : 'none';
+    if (tabs) tabs.style.display = signed ? 'none' : '';
+    if (signed) { const who = document.getElementById('l-who'); if (who) who.textContent = this.user.email || 'your account'; }
+    const lc = document.getElementById('l-cloud'); if (lc) lc.textContent = this.client ? '● Database connected' : '○ No database connected';
+  }
+  hideLanding() { const l = document.getElementById('landing'); if (l) l.classList.add('hidden'); }
+
+  // ---------- form rendering ----------
+  renderForm(def) {
+    document.getElementById('crumbs').innerHTML = this.esc(this.domains[def.d]) + ' &nbsp;/&nbsp; <b>' + this.esc(def.title) + '</b>';
+    const rec = this.recFor(def);
+    const v = document.getElementById('form');
+    let h = this.instbarHTML(def) + '<div class="fhead"><div class="fkick"><span>Form · ' + this.esc(def.code) + '</span><span class="dom">' + this.esc(this.domains[def.d]) + '</span></div>' +
+      '<h1 class="ftitle">' + this.esc(def.title) + '</h1><p class="fpurpose">' + this.esc(def.purpose) + '</p></div>';
+    // meta
+    h += '<div class="meta">' + def.meta.map(mf => {
+      const val = rec.meta[mf.key] || '';
+      let inp;
+      if (mf.type === 'select') {
+        inp = '<select data-meta="' + mf.key + '">' + ['', ...mf.options].map(o =>
+          '<option' + (o === val ? ' selected' : '') + '>' + this.esc(o) + '</option>').join('') + '</select>';
+      } else {
+        inp = '<input data-meta="' + mf.key + '" value="' + this.esc(val) + '" placeholder="' + this.esc(mf.placeholder || '') + '">';
+      }
+      return '<div class="mf"><label>' + this.esc(mf.label) + '</label>' + inp + '</div>';
+    }).join('') + '</div>';
+    // sections
+    for (const s of def.sections) h += this.sectionHTML(s, rec);
+    v.innerHTML = h;
+    v.scrollTop = 0;
+    if (this._applyLean) this._applyLean();
+    // wire
+    this.wireForm(def);
+    v.querySelectorAll('textarea').forEach(t => this.grow(t));
+  }
+
+  sectionHTML(s, rec) {
+    const sv = rec.sections[s.key];
+    let control = '';
+    if (s.type === 'table') {
+      let rows = Array.isArray(sv) && sv.length ? sv : [ {}, {}, {} ];
+      const head = '<tr>' + s.columns.map(c => '<th>' + this.esc(c.label) + '</th>').join('') + '</tr>';
+      const body = rows.map((row, ri) => '<tr>' + s.columns.map(c =>
+        '<td><input data-sec="' + s.key + '" data-row="' + ri + '" data-col="' + c.key + '" value="' + this.esc(row[c.key] || '') + '"></td>').join('') + '</tr>').join('');
+      control = '<table class="grid" data-table="' + s.key + '"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>' +
+        '<button class="addrow" data-add="' + s.key + '">+ Add row</button>';
+    } else if (s.type === 'check') {
+      const cv = sv || {};
+      control = '<div class="checks">' + s.items.map(it =>
+        '<label class="chk"><input type="checkbox" data-sec="' + s.key + '" data-item="' + it.key + '"' + (cv[it.key] ? ' checked' : '') + '>' + this.esc(it.label) + '</label>').join('') + '</div>';
+    } else if (s.type === 'text') {
+      control = '<input class="line" data-sec="' + s.key + '" value="' + this.esc(sv || '') + '" placeholder="' + this.esc(s.placeholder || '') + '">';
+    } else {
+      control = '<textarea data-sec="' + s.key + '" placeholder="' + this.esc(s.placeholder || '') + '">' + this.esc(sv || '') + '</textarea>';
+    }
+    let detail = '<div class="sec-meta">';
+    if (s.example) detail += '<div class="sec-eg"><span class="k">Example</span><em>' + this.esc(s.example) + '</em></div>';
+    if (s.why) detail += '<div class="sec-why"><span class="k">Why it matters</span>' + this.esc(s.why) + '</div>';
+    detail += '</div>';
+    return '<div class="sec" data-section="' + s.key + '" data-kind="' + s.type + '">' +
+      '<div class="sec-top"><span class="sec-label">' + this.esc(s.label) + '</span><span class="sec-req">' + (s.required ? 'Required' : 'Optional') + '</span></div>' +
+      (s.guidance ? '<p class="sec-guide">' + this.esc(s.guidance) + '</p>' : '') +
+      ((s.example || s.why) ? detail : '') + control + '</div>';
+  }
+
+  grow(t) { t.style.height = 'auto'; t.style.height = (t.scrollHeight + 2) + 'px'; }
+
+  wireForm(def) {
+    const v = document.getElementById('form');
+    const persist = () => { this.persist(def); };
+    v.oninput = (e) => {
+      if (e.target.tagName === 'TEXTAREA') this.grow(e.target);
+      if (e.target.id === 'inst-title') { const sel = document.getElementById('inst-select'); const o = sel && sel.selectedOptions[0]; if (o) o.textContent = e.target.value || 'Untitled submission'; }
+      persist();
+    };
+    v.onchange = (e) => { if (e.target.id === 'inst-select') { this.selectInstance(def, e.target.value); return; } if (e.target.id === 'inst-project') { const s = this.currentSub(def.id); s.project_id = e.target.value || null; persist(); return; } persist(); };
+    v.onclick = (e) => {
+      if (e.target.id === 'inst-signin') { this.openAuth(); return; }
+      if (e.target.id === 'inst-new') { this.newInstance(def); return; }
+      if (e.target.id === 'inst-del') { this.deleteInstance(def); return; }
+      const add = e.target.closest('[data-add]');
+      if (add) {
+        const key = add.dataset.add;
+        const tbody = v.querySelector('table[data-table="' + key + '"] tbody');
+        const sec = def.sections.find(s => s.key === key);
+        const ri = tbody.children.length;
+        const tr = document.createElement('tr');
+        tr.innerHTML = sec.columns.map(c => '<td><input data-sec="' + key + '" data-row="' + ri + '" data-col="' + c.key + '" value=""></td>').join('');
+        tbody.appendChild(tr);
+        persist();
+      }
+    };
+  }
+
+  persist(def) {
+    const v = document.getElementById('form');
+    const rec = { meta: {}, sections: {} };
+    v.querySelectorAll('[data-meta]').forEach(el => { rec.meta[el.dataset.meta] = el.value; });
+    for (const s of def.sections) {
+      if (s.type === 'table') {
+        const rows = {};
+        v.querySelectorAll('[data-sec="' + s.key + '"][data-row]').forEach(el => {
+          const r = el.dataset.row; (rows[r] = rows[r] || {})[el.dataset.col] = el.value;
+        });
+        rec.sections[s.key] = Object.keys(rows).map(k => rows[k]).filter(o => Object.values(o).some(x => x && x.trim()));
+      } else if (s.type === 'check') {
+        const o = {};
+        v.querySelectorAll('[data-sec="' + s.key + '"][data-item]').forEach(el => { o[el.dataset.item] = el.checked; });
+        rec.sections[s.key] = o;
+      } else {
+        const el = v.querySelector('[data-sec="' + s.key + '"]');
+        rec.sections[s.key] = el ? el.value : '';
+      }
+    }
+    if (this.user) {
+      const s = this.currentSub(def.id);
+      s.data = rec;
+      const ti = document.getElementById('inst-title'); if (ti) s.title = ti.value;
+      s.updated_at = new Date().toISOString(); s._draft = false;
+      this.flashSaved();
+      this.saveRelational(def, s.data, s);
+    } else {
+      this.db[def.id] = rec;
+      this.save();
+      this.upsertRemote(def.id);
+    }
+  }
+
+  // ---------- chrome / io ----------
+  wireChrome() {
+    document.getElementById('btn-print').onclick = () => window.print();
+    document.getElementById('btn-export').onclick = () => this.download('forms-data.json', JSON.stringify(this.db, null, 2), 'application/json');
+    document.getElementById('btn-import').onclick = () => document.getElementById('file-import').click();
+    document.getElementById('file-import').onchange = (e) => {
+      const f = e.target.files[0]; if (!f) return;
+      const r = new FileReader();
+      r.onload = () => { try { this.db = JSON.parse(r.result); this.save(); this.route(); } catch (x) { alert('Could not read that file.'); } };
+      r.readAsText(f);
+    };
+    const modal = document.getElementById('modal');
+    document.getElementById('btn-schema').onclick = () => { this.openSchema(); };
+    document.getElementById('modal-close').onclick = () => modal.classList.remove('open');
+    modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('open'); };
+    document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active'); this._tab = t.dataset.tab; this.showCode();
+    });
+    document.getElementById('btn-copy').onclick = () => { navigator.clipboard && navigator.clipboard.writeText(document.getElementById('code-out').textContent); };
+    document.getElementById('btn-dl').onclick = () => {
+      const sql = this._tab !== 'json';
+      this.download(sql ? 'schema.sql' : 'schema.json', document.getElementById('code-out').textContent, 'text/plain');
+    };
+    // navigation: search + collapsible groups
+    document.getElementById('nav-search').addEventListener('input', (e) => this.applySearch(e.target.value));
+    document.getElementById('index').addEventListener('click', (e) => {
+      const h = e.target.closest('[data-toggle]');
+      if (!h) return;
+      const g = h.parentElement; g.classList.toggle('collapsed'); const di = +h.dataset.toggle;
+      if (g.classList.contains('collapsed')) this.collapsed.add(di); else this.collapsed.delete(di);
+    });
+    // connect db
+    const cm = document.getElementById('cmodal');
+    document.getElementById('btn-connect').onclick = () => {
+      if (this.supa) { document.getElementById('c-url').value = this.supa.url; document.getElementById('c-key').value = this.supa.key; }
+      cm.classList.add('open');
+    };
+    document.getElementById('c-close').onclick = () => cm.classList.remove('open');
+    document.getElementById('c-close2').onclick = () => cm.classList.remove('open');
+    cm.onclick = (e) => { if (e.target === cm) cm.classList.remove('open'); };
+    document.getElementById('c-connect').onclick = () => {
+      const u = document.getElementById('c-url').value.trim(), k = document.getElementById('c-key').value.trim();
+      if (u && k) this.connect(u, k, false);
+    };
+    document.getElementById('c-disconnect').onclick = () => { this.disconnect(); cm.classList.remove('open'); };
+    // account / auth
+    document.getElementById('btn-account').onclick = () => {
+      if (this.user) { if (confirm('Sign out of ' + (this.user.email || 'this account') + '?')) this.signOut(); }
+      else this.openAuth();
+    };
+    const am = document.getElementById('amodal');
+    document.getElementById('a-close').onclick = () => am.classList.remove('open');
+    am.onclick = (e) => { if (e.target === am) am.classList.remove('open'); };
+    document.getElementById('a-signin').onclick = () => this.doAuth('in');
+    document.getElementById('a-signup').onclick = () => this.doAuth('up');
+    document.getElementById('a-magic').onclick = () => this.doAuth('magic');
+  }
+
+  // ---------- auth + multi-record ----------
+  uuid() { return crypto.randomUUID ? crypto.randomUUID() : ('id-' + Date.now() + '-' + Math.random().toString(16).slice(2)); }
+  async initAuth() {
+    if (!this.client) return;
+    try { const { data } = await this.client.auth.getSession(); this.user = data.session ? data.session.user : null; }
+    catch (e) { this.user = null; }
+    if (!this._authSub) { this._authSub = true; this.client.auth.onAuthStateChange((_e, sess) => { this.user = sess ? sess.user : null; this.afterAuth(); }); }
+    if (this.user) await this.loadInstances();
+    if (this.user) await this.loadProjects();
+    this.renderAccount();
+  }
+  async afterAuth() {
+    this.renderAccount();
+    if (this.user) await this.loadInstances(); else { this.byForm = {}; this.active = {}; }
+    if (this.user) await this.loadProjects();
+    const am = document.getElementById('amodal'); if (am && this.user) am.classList.remove('open');
+    if (this.user) { const h = location.hash || ''; if (!/#\/.+/.test(h)) { location.hash = '#/gallery'; return; } }
+    this.route();
+  }
+  renderAccount() {
+    const b = document.getElementById('btn-account'); if (!b) return;
+    b.textContent = this.user ? (this.user.email || 'Account') : 'Sign in';
+    b.classList.toggle('primary', !this.user);
+  }
+  openAuth() { const a = document.getElementById('amodal'); if (a) { this.authMsg(''); a.classList.add('open'); } }
+  authMsg(t, err) { const m = document.getElementById('a-msg'); if (m) { m.textContent = t || ''; m.style.color = err ? '#9A6B1F' : 'var(--muted)'; } }
+  async doAuth(mode) {
+    if (!this.client) { this.authMsg('Connect a database first (Connect DB).', 1); return; }
+    const email = (document.getElementById('a-email').value || '').trim();
+    const pw = document.getElementById('a-pw').value || '';
+    if (!email) { this.authMsg('Enter your email.', 1); return; }
+    try {
+      if (mode === 'magic') { const { error } = await this.client.auth.signInWithOtp({ email }); if (error) throw error; this.authMsg('Check your email for a sign-in link.'); return; }
+      if (mode === 'up') { const { error } = await this.client.auth.signUp({ email, password: pw }); if (error) throw error; this.authMsg('Account created. If email confirmation is on, confirm via email, then sign in.'); return; }
+      const { error } = await this.client.auth.signInWithPassword({ email, password: pw }); if (error) throw error;
+      this.authMsg('Signed in.');
+    } catch (e) { this.authMsg(e.message || String(e), 1); }
+  }
+  async signOut() { try { await this.client.auth.signOut(); } catch (e) {} this.user = null; this.afterAuth(); }
+
+  async loadInstances() { this.byForm = {}; this.active = {}; this.loaded = {}; }
+  async loadProjects() {
+    this._projects = [];
+    if (!this.client || !this.user) return;
+    try { const r = await this.client.from('projects').select('id,code,name').order('created_at'); if (!r.error && r.data) this._projects = r.data; } catch (e) {}
+  }
+  draftSub(formId) { return { id: this.uuid(), user_id: this.user.id, form_id: formId, title: '', project_id: null, data: { meta: {}, sections: {} }, updated_at: new Date().toISOString(), _draft: true }; }
+  currentSub(formId) {
+    this.byForm = this.byForm || {}; this.active = this.active || {};
+    const list = this.byForm[formId] || (this.byForm[formId] = []);
+    let s = list.find(x => x.id === this.active[formId]);
+    if (!s) { s = list[0] || (list.unshift(this.draftSub(formId)), list[0]); this.active[formId] = s.id; }
+    return s;
+  }
+  recFor(def) {
+    if (this.user) { const s = this.currentSub(def.id); return s.data || (s.data = { meta: {}, sections: {} }); }
+    return this.db[def.id] || (this.db[def.id] = { meta: {}, sections: {} });
+  }
+  instbarHTML(def) {
+    if (!this.user) {
+      return '<div class="instbar local">Editing a local draft. <a id="inst-signin">Sign in</a> to save multiple named submissions per form to your account.</div>';
+    }
+    const list = this.byForm[def.id] || [];
+    const cur = this.currentSub(def.id);
+    const opts = list.map(s => '<option value="' + s.id + '"' + (s.id === cur.id ? ' selected' : '') + '>' + this.esc(s.title || 'Untitled submission') + '</option>').join('');
+    const projs = this._projects || [];
+    const projOpts = '<option value="">— No project —</option>' + projs.map(p => '<option value="' + p.id + '"' + (p.id === (cur.project_id || '') ? ' selected' : '') + '>' + this.esc((p.code && p.code !== '—' ? p.code + ' · ' : '') + (p.name || 'Untitled')) + '</option>').join('');
+    return '<div class="instbar"><span class="ib-l">Submission</span>' +
+      '<select id="inst-select">' + opts + '</select>' +
+      '<input id="inst-title" placeholder="Name this submission…" value="' + this.esc(cur.title || '') + '">' +
+      '<span class="ib-l">Project</span>' +
+      '<select id="inst-project" title="Roll this submission up to a project">' + projOpts + '</select>' +
+      '<button class="btn" id="inst-new">+ New</button>' +
+      '<button class="btn" id="inst-del">Delete</button></div>';
+  }
+  newInstance(def) { const s = this.draftSub(def.id); (this.byForm[def.id] = this.byForm[def.id] || []).unshift(s); this.active[def.id] = s.id; this.renderForm(def); }
+  selectInstance(def, id) { this.active[def.id] = id; this.renderForm(def); }
+  async deleteInstance(def) {
+    const s = this.currentSub(def.id); const list = this.byForm[def.id] || [];
+    if (!s._draft && this.client) { try { await this.client.from(this.tname(def)).delete().eq('id', s.id); } catch (e) { console.error(e); } }
+    const i = list.findIndex(x => x.id === s.id); if (i >= 0) list.splice(i, 1);
+    this.active[def.id] = list[0] ? list[0].id : null;
+    this.renderForm(def);
+  }
+  async upsertSub(s) {
+    if (!this.client || !this.user) return;
+    try { await this.client.from('submissions').upsert({ id: s.id, user_id: this.user.id, form_id: s.form_id, title: s.title, data: s.data, updated_at: s.updated_at }); }
+    catch (e) { console.error('sync submission', e); }
+  }
+
+  // ---------- Supabase backend ----------
+  initBackend() {
+    try { this.supa = JSON.parse(localStorage.getItem('qq_supabase') || 'null'); } catch (e) { this.supa = null; }
+    if (!this.supa && this.DEFAULT_SUPA) this.supa = this.DEFAULT_SUPA;
+    if (this.supa && this.supa.url && this.supa.key) { this.setCloud('connecting'); this.connect(this.supa.url, this.supa.key, true); }
+    else this.setCloud('local');
+  }
+  setCloud(state) {
+    const c = document.getElementById('cloud'); if (!c) return;
+    c.classList.toggle('on', state === 'connected');
+    const label = { local: 'Local only', connecting: 'Connecting…', connected: 'Connected', error: 'Connect failed' }[state] || state;
+    c.querySelector('.cl').textContent = label;
+  }
+  async connect(url, key, silent) {
+    try {
+      this.setCloud('connecting');
+      if (!this._createClient) { const m = await import('https://esm.sh/@supabase/supabase-js@2'); this._createClient = m.createClient; }
+      this.client = this._createClient(url, key);
+      await this.loadRemote();
+      this.supa = { url, key }; localStorage.setItem('qq_supabase', JSON.stringify(this.supa));
+      this.setCloud('connected');
+      const cm = document.getElementById('cmodal'); if (cm) cm.classList.remove('open');
+      await this.initAuth();
+      this.route();
+    } catch (e) { console.error(e); this.client = null; this.setCloud('error'); if (!silent) alert('Could not connect: ' + (e.message || e)); }
+  }
+  async loadRemote() {
+    const { data, error } = await this.client.from('qq_forms').select('id,data');
+    if (error) throw error;
+    (data || []).forEach(r => { if (r && r.id) this.db[r.id] = r.data; });
+    try { localStorage.setItem(this.KEY, JSON.stringify(this.db)); } catch (e) {}
+  }
+  async upsertRemote(id) {
+    if (!this.client) return;
+    try { await this.client.from('qq_forms').upsert({ id: id, data: this.db[id], updated_at: new Date().toISOString() }); }
+    catch (e) { console.error('sync', e); }
+  }
+  disconnect() { this.client = null; this.supa = null; try { localStorage.removeItem('qq_supabase'); } catch (e) {} this.setCloud('local'); }
+  supaSQL() {
+    return 'create table if not exists qq_forms (\n' +
+      '  id          text primary key,\n' +
+      '  data        jsonb not null default \'{}\',\n' +
+      '  updated_at  timestamptz not null default now()\n' +
+      ');\n\n' +
+      'alter table qq_forms enable row level security;\n' +
+      'drop policy if exists "qq_forms_anon" on qq_forms;\n' +
+      'create policy "qq_forms_anon" on qq_forms\n  for all using (true) with check (true);';
+  }
+
+  openSchema() { this._tab = this._tab || 'sql'; this.showCode(); document.getElementById('modal').classList.add('open'); }
+  showCode() {
+    const out = this._tab === 'json' ? this.jsonSchema() : this.sqlDDL();
+    document.getElementById('code-out').textContent = out;
+  }
+
+  snake(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').replace(/__+/g, '_'); }
+
+  // column-name resolver (shared by DDL + sync, with collision-safe dedupe)
+  colsFor(def) {
+    this._cols = this._cols || {};
+    if (this._cols[def.id]) return this._cols[def.id];
+    const used = new Set(['id', 'user_id', 'title', 'created_at', 'updated_at']);
+    const uniq = (base) => { let b = base || 'col', n = b, i = 2; while (used.has(n)) { n = b + '_' + i; i++; } used.add(n); return n; };
+    const meta = {}; def.meta.forEach(m => { meta[m.key] = uniq(this.snake(m.label)); });
+    const sec = {}; def.sections.filter(s => s.type !== 'table').forEach(s => { sec[s.key] = uniq(this.snake(s.key)); });
+    const child = {}; def.sections.filter(s => s.type === 'table').forEach(s => {
+      const cu = new Set(['id', 'parent_id', 'position']); const cm = {};
+      s.columns.forEach(c => { let b = this.snake(c.label) || this.snake(c.key) || 'col', n = b, i = 2; while (cu.has(n)) { n = b + '_' + i; i++; } cu.add(n); cm[c.key] = n; });
+      child[s.key] = cm;
+    });
+    const r = { meta, sec, child }; this._cols[def.id] = r; return r;
+  }
+  tname(def) { return 'form_' + def.id; }
+
+  sqlDDL() {
+    const q = x => '"' + x + '"';
+    let out = '-- QQ-Studios Forms — relational schema\n-- One table per form (prefixed form_), child tables for multi-row sections,\n-- per-user row-level security. Run once in the Supabase SQL editor.\n\n';
+    out += '-- Project Planner (powers the Planner dashboard)\ncreate table if not exists projects (\n  ' + q('id') + ' uuid primary key default gen_random_uuid(),\n  ' + q('user_id') + ' uuid not null references auth.users(id) on delete cascade,\n  ' + q('code') + ' text,\n  ' + q('name') + ' text,\n  ' + q('phase') + ' text,\n  ' + q('status') + ' text,\n  ' + q('pct') + ' int,\n  ' + q('pm') + ' text,\n  ' + q('bac') + ' numeric,\n  ' + q('spent') + ' numeric,\n  ' + q('created_at') + ' timestamptz not null default now(),\n  ' + q('updated_at') + ' timestamptz not null default now()\n);\nalter table projects enable row level security;\ndrop policy if exists ' + q('own_projects') + ' on projects;\ncreate policy ' + q('own_projects') + ' on projects for all using (auth.uid() = ' + q('user_id') + ') with check (auth.uid() = ' + q('user_id') + ');\n\n';
+    for (const d of this.defs) {
+      const t = this.tname(d); const C = this.colsFor(d);
+      const cols = ['  ' + q('id') + ' uuid primary key default gen_random_uuid()',
+        '  ' + q('user_id') + ' uuid not null references auth.users(id) on delete cascade',
+        '  ' + q('title') + ' text',
+        '  ' + q('project_id') + ' uuid references projects(id) on delete set null'];
+      d.meta.forEach(m => cols.push('  ' + q(C.meta[m.key]) + ' text'));
+      d.sections.filter(s => s.type !== 'table').forEach(s => cols.push('  ' + q(C.sec[s.key]) + ' ' + (s.type === 'check' ? 'jsonb' : 'text')));
+      cols.push('  ' + q('created_at') + ' timestamptz not null default now()');
+      cols.push('  ' + q('updated_at') + ' timestamptz not null default now()');
+      out += '-- ' + d.title + '\ncreate table if not exists ' + t + ' (\n' + cols.join(',\n') + '\n);\n';
+      out += 'alter table ' + t + ' enable row level security;\n';
+      out += 'drop policy if exists ' + q('own_' + t) + ' on ' + t + ';\n';
+      out += 'create policy ' + q('own_' + t) + ' on ' + t + ' for all using (auth.uid() = ' + q('user_id') + ') with check (auth.uid() = ' + q('user_id') + ');\n\n';
+      d.sections.filter(s => s.type === 'table').forEach(s => {
+        const ct = t + '_' + this.snake(s.key); const cm = C.child[s.key];
+        const c2 = ['  ' + q('id') + ' uuid primary key default gen_random_uuid()',
+          '  ' + q('parent_id') + ' uuid not null references ' + t + '(id) on delete cascade',
+          '  ' + q('position') + ' int not null default 0'];
+        s.columns.forEach(c => c2.push('  ' + q(cm[c.key]) + ' text'));
+        out += 'create table if not exists ' + ct + ' (\n' + c2.join(',\n') + '\n);\n';
+        out += 'alter table ' + ct + ' enable row level security;\n';
+        out += 'drop policy if exists ' + q('own_' + ct) + ' on ' + ct + ';\n';
+        out += 'create policy ' + q('own_' + ct) + ' on ' + ct + ' for all using (exists (select 1 from ' + t + ' p where p.' + q('id') + ' = ' + q('parent_id') + ' and p.' + q('user_id') + ' = auth.uid())) with check (exists (select 1 from ' + t + ' p where p.' + q('id') + ' = ' + q('parent_id') + ' and p.' + q('user_id') + ' = auth.uid()));\n\n';
+      });
+    }
+    return out.trim() + '\n';
+  }
+
+  // ---------- relational read/write ----------
+  async ensureLoaded(formId) {
+    if (!this.user || !this.client) return;
+    this.loaded = this.loaded || {};
+    if (this.loaded[formId]) return;
+    const def = this.defs.find(d => d.id === formId); if (!def) return;
+    await this.loadRelational(def);
+    this.loaded[formId] = true;
+  }
+  rowToSub(def, row) {
+    const C = this.colsFor(def);
+    const data = { meta: {}, sections: {} };
+    def.meta.forEach(m => { data.meta[m.key] = row[C.meta[m.key]] != null ? row[C.meta[m.key]] : ''; });
+    def.sections.forEach(s => {
+      if (s.type === 'table') data.sections[s.key] = [];
+      else if (s.type === 'check') data.sections[s.key] = row[C.sec[s.key]] || {};
+      else data.sections[s.key] = row[C.sec[s.key]] != null ? row[C.sec[s.key]] : '';
+    });
+    return { id: row.id, user_id: row.user_id, form_id: def.id, title: row.title || '', project_id: row.project_id != null ? row.project_id : null, updated_at: row.updated_at, data };
+  }
+  async loadRelational(def) {
+    const t = this.tname(def); const C = this.colsFor(def);
+    this.byForm = this.byForm || {};
+    const res = await this.client.from(t).select('*');
+    if (res.error) { console.error('load ' + t, res.error.message); this.byForm[def.id] = this.byForm[def.id] || []; return; }
+    const subs = (res.data || []).map(r => this.rowToSub(def, r));
+    const tableSecs = def.sections.filter(s => s.type === 'table');
+    if (subs.length && tableSecs.length) {
+      const ids = subs.map(s => s.id);
+      for (const s of tableSecs) {
+        const ct = t + '_' + this.snake(s.key); const cm = C.child[s.key];
+        const ch = await this.client.from(ct).select('*').in('parent_id', ids);
+        if (ch.error) { console.error('load ' + ct, ch.error.message); continue; }
+        const by = {}; (ch.data || []).forEach(r => { (by[r.parent_id] = by[r.parent_id] || []).push(r); });
+        subs.forEach(sub => {
+          sub.data.sections[s.key] = (by[sub.id] || []).sort((a, b) => (a.position || 0) - (b.position || 0))
+            .map(r => { const o = {}; s.columns.forEach(c => { o[c.key] = r[cm[c.key]] != null ? r[cm[c.key]] : ''; }); return o; });
+        });
+      }
+    }
+    subs.sort((a, b) => String(b.updated_at || '').localeCompare(String(a.updated_at || '')));
+    this.byForm[def.id] = subs;
+  }
+  async saveRelational(def, rec, sub) {
+    if (!this.client || !this.user) return;
+    const t = this.tname(def); const C = this.colsFor(def);
+    const parent = { id: sub.id, user_id: this.user.id, title: sub.title || null, project_id: sub.project_id || null, updated_at: sub.updated_at };
+    if (this._noProjCol) delete parent.project_id;
+    def.meta.forEach(m => { parent[C.meta[m.key]] = rec.meta[m.key] || null; });
+    def.sections.filter(s => s.type !== 'table').forEach(s => {
+      parent[C.sec[s.key]] = s.type === 'check' ? (rec.sections[s.key] || {}) : (rec.sections[s.key] || null);
+    });
+    let up = await this.client.from(t).upsert(parent);
+    if (up.error && /project_id/i.test(up.error.message) && ('project_id' in parent)) { this._noProjCol = true; delete parent.project_id; up = await this.client.from(t).upsert(parent); }
+    if (up.error) { console.error('save ' + t, up.error.message); return; }
+    for (const s of def.sections.filter(x => x.type === 'table')) {
+      const ct = t + '_' + this.snake(s.key); const cm = C.child[s.key];
+      await this.client.from(ct).delete().eq('parent_id', sub.id);
+      const rows = (rec.sections[s.key] || []).filter(r => Object.values(r).some(v => v && String(v).trim()))
+        .map((r, i) => { const o = { parent_id: sub.id, position: i }; s.columns.forEach(c => { o[cm[c.key]] = r[c.key] || null; }); return o; });
+      if (rows.length) { const ins = await this.client.from(ct).insert(rows); if (ins.error) console.error('child ' + ct, ins.error.message); }
+    }
+  }
+
+  jsonSchema() {
+    const defs = {};
+    for (const d of this.defs) {
+      const props = {};
+      d.meta.forEach(m => { props[this.snake(m.label)] = { type: 'string', title: m.label }; });
+      for (const s of d.sections) {
+        const key = this.snake(s.key);
+        if (s.type === 'table') {
+          props[key] = { type: 'array', title: s.label, items: { type: 'object',
+            properties: Object.fromEntries(s.columns.map(c => [this.snake(c.label), { type: 'string', title: c.label }])) } };
+        } else if (s.type === 'check') {
+          props[key] = { type: 'object', title: s.label,
+            properties: Object.fromEntries(s.items.map(i => [i.key, { type: 'boolean', title: i.label }])) };
+        } else {
+          props[key] = { type: 'string', title: s.label, description: s.guidance || '' };
+        }
+      }
+      defs[this.snake(d.code)] = { type: 'object', title: d.title, description: d.purpose, properties: props };
+    }
+    return JSON.stringify({ $schema: 'http://json-schema.org/draft-07/schema#', title: 'QQ-Studios Forms', definitions: defs }, null, 2);
+  }
+
+  download(name, text, mime) {
+    const b = new Blob([text], { type: mime });
+    const u = URL.createObjectURL(b);
+    const a = document.createElement('a'); a.href = u; a.download = name; a.click();
+    setTimeout(() => URL.revokeObjectURL(u), 1500);
+  }
+
+  esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // ---------- catalog (for full index) ----------
+  allCatalog() {
+    return window.FORMS.map(f => ({ id: this.snake(f.code), code: f.code, title: f.title, d: f.d }));
+  }
+
+  // ---------- all 77 forms (rich overrides + generated from catalog) ----------
+  allDefs() {
+    const rich = {}; this.buildDefs().forEach(d => { rich[d.id] = d; });
+    const seen = {};
+    return window.FORMS.map(f => {
+      let id = this.snake(f.code);
+      if (seen[id]) id = id + '_' + this.snake(f.title).slice(0, 8);
+      seen[id] = 1;
+      if (rich[id]) return rich[id];
+      const meta = (f.meta && f.meta.length ? f.meta : ['Owner', 'Author', 'Status', 'Date']).map(l => ({ key: this.snake(l), label: l }));
+      return { id, code: f.code, title: f.title, d: f.d, purpose: f.purpose || '', meta, sections: (f.s || []).map(s => this.mapSection(s, id)) };
+    });
+  }
+  mapSection(s, id) {
+    const base = { key: this.snake(s.l), label: s.l, guidance: s.h || '', required: false };
+    const rich = (window.FORMS_RICH && id && window.FORMS_RICH[id] && window.FORMS_RICH[id][s.l]) || null;
+    if (rich) { if (rich.ex) base.example = rich.ex; if (rich.why) base.why = rich.why; }
+    if (s.t === 'cols') return Object.assign(base, { type: 'table', columns: s.c.map(c => ({ key: this.snake(c), label: c })) });
+    if (s.t === 'check') return Object.assign(base, { type: 'check', items: s.items.map(it => ({ key: this.snake(it), label: it })) });
+    if (s.t === 'draw') return Object.assign(base, { type: 'long', placeholder: 'Describe the diagram here, or attach it in your design tool…' });
+    return Object.assign(base, { type: 'long' });
+  }
+
+  // ---------- the 4 deeply-detailed forms (rich guidance / example / why) ----------
+  buildDefs() {
+    return [
+      { id:'prd', code:'PRD', title:'Product Requirements Document', d:0,
+        purpose:'Define what a product or feature should do, and how you will know it worked.',
+        meta:[{key:'owner',label:'Owner (PM)'},{key:'author',label:'Author'},
+          {key:'status',label:'Status',type:'select',options:['Draft','In Review','Approved']},{key:'release',label:'Target release',placeholder:'e.g. Q3 2026'}],
+        sections:[
+          {key:'problem',label:'Problem statement & evidence',type:'long',required:true,
+            guidance:'Describe the user or business problem in plain language, then back it with evidence — data, support tickets, or direct quotes.',
+            example:'Support logs ~300 tickets/month about failed CSV imports; three of last quarter’s churn interviews named it unprompted.',
+            why:'A problem no one can verify becomes a feature no one needs. Evidence is what earns the build.',
+            placeholder:'What problem are we solving, and how do we know it’s real?'},
+          {key:'goals',label:'Goals & success metrics',type:'long',required:true,
+            guidance:'List each goal with the metric, target, and timeframe that proves it was achieved.',
+            example:'Reduce failed imports from 12% to under 3% within one quarter of launch.',
+            why:'Goals without metrics can’t be judged shipped or successful — they just drift.',
+            placeholder:'Goal — measured by [metric, target, timeframe]'},
+          {key:'nongoals',label:'Non-goals',type:'long',required:false,
+            guidance:'State plainly what this effort will not do or cover.',
+            example:'Not redesigning the importer UI; not adding XLSX support this release.',
+            why:'Naming non-goals up front prevents the majority of scope creep and review churn.',
+            placeholder:'Explicitly out of scope…'},
+          {key:'requirements',label:'Requirements',type:'table',required:true,
+            columns:[{key:'n',label:'#'},{key:'requirement',label:'Requirement'},{key:'priority',label:'Priority (P0–P2)'}],
+            guidance:'Enumerate concrete, testable requirements with a priority. Keep each one to a single verifiable statement.',
+            example:'P0 — Reject malformed rows and return a downloadable error report.',
+            why:'A flat, prioritized list is what engineering actually estimates and builds against.'},
+          {key:'risks',label:'Dependencies, risks & open questions',type:'long',required:false,
+            guidance:'Capture what this depends on, what could go wrong, and what is still undecided.',
+            example:'Depends on the new validation service (team Atlas) landing by week 3; open question: do we block or warn on partial failures?',
+            why:'Surfacing risk early is far cheaper than discovering it at launch.',
+            placeholder:'Dependencies, risks, open questions…'}
+        ]},
+      { id:'adr', code:'ADR', title:'Architecture Decision Record', d:1,
+        purpose:'Capture one architectural decision — its context, the options, the choice, and the consequences.',
+        meta:[{key:'author',label:'Author'},{key:'number',label:'ADR #',placeholder:'e.g. ADR-021'},
+          {key:'status',label:'Status',type:'select',options:['Proposed','Accepted','Superseded']},{key:'date',label:'Date'}],
+        sections:[
+          {key:'context',label:'Context',type:'long',required:true,
+            guidance:'Describe the situation forcing a decision now — the constraints, requirements, and deadlines in play.',
+            example:'We need multi-region writes; our single-primary Postgres can’t meet the new 5-minute RPO.',
+            why:'Future readers judge a decision by the constraints you faced, not by what’s obvious today.',
+            placeholder:'What situation forces this decision?'},
+          {key:'options',label:'Options considered',type:'long',required:true,
+            guidance:'List the realistic options with their pros and cons. Always include “do nothing.”',
+            example:'A) CockroachDB  B) Postgres + Citus  C) Do nothing and accept the RPO gap.',
+            why:'Recording the rejected options stops the team re-litigating them six months later.',
+            placeholder:'Option A — pros / cons …'},
+          {key:'decision',label:'Decision',type:'long',required:true,
+            guidance:'State what was chosen, in one or two sentences.',
+            example:'Adopt CockroachDB for the orders service; migrate during Q3.',
+            why:'The decision is the single load-bearing sentence this whole record exists to preserve.',
+            placeholder:'We chose…'},
+          {key:'consequences',label:'Consequences',type:'long',required:true,
+            guidance:'Spell out what becomes easier, what becomes harder, and what you’re committing to maintain.',
+            example:'Gain multi-region writes and stronger durability; take on a new operational learning curve and ~20% cost increase.',
+            why:'Honest consequences make the trade-off auditable instead of forgotten.',
+            placeholder:'Easier… / Harder… / We now own…'},
+          {key:'related',label:'Supersedes / related',type:'text',required:false,
+            guidance:'Note any ADRs this replaces or relates to.',
+            example:'Supersedes ADR-014; related to ADR-009.',
+            why:'Links keep the decision history navigable as it grows.',
+            placeholder:'Supersedes ADR-…'}
+        ]},
+      { id:'postmortem', code:'PM', title:'Postmortem / RCA', d:3,
+        purpose:'A blameless account of an incident: what happened, why, and what will prevent a recurrence.',
+        meta:[{key:'severity',label:'Severity',type:'select',options:['SEV1','SEV2','SEV3']},{key:'author',label:'Author'},
+          {key:'duration',label:'Duration',placeholder:'e.g. 42 min'},{key:'status',label:'Status',type:'select',options:['Draft','Reviewed']}],
+        sections:[
+          {key:'summary',label:'Summary',type:'long',required:true,
+            guidance:'In two or three sentences, say what broke, the impact, and how it was resolved.',
+            example:'A bad deploy dropped the cache layer; checkout latency spiked for 42 minutes until we rolled back.',
+            why:'Most people only ever read the summary — make it carry the whole story.',
+            placeholder:'What broke, the impact, and the resolution…'},
+          {key:'timeline',label:'Timeline',type:'table',required:true,
+            columns:[{key:'time',label:'Time'},{key:'event',label:'Event'}],
+            guidance:'Log the key events with timestamps in a single timezone, from first signal to full resolution.',
+            example:'14:02 — deploy v812 ships · 14:09 — latency alert fires · 14:44 — rollback complete.',
+            why:'A precise timeline is the backbone every root-cause analysis hangs on.'},
+          {key:'rootcause',label:'Root cause',type:'long',required:true,
+            guidance:'Use 5 Whys. Name the systems and processes involved — never the people.',
+            example:'The cache client defaulted to a 1s timeout; under load it tripped, and no fallback path existed.',
+            why:'Blameless, systemic root cause is what actually prevents the next incident.',
+            placeholder:'Why did it happen? Keep asking why…'},
+          {key:'actions',label:'Action items',type:'table',required:true,
+            columns:[{key:'action',label:'Action'},{key:'owner',label:'Owner'},{key:'due',label:'Due'}],
+            guidance:'List concrete, owned, dated prevention items — each one a ticket someone will close.',
+            example:'Add a cache-miss fallback path — A. Rivera — Aug 30.',
+            why:'A postmortem with no owned actions is just a sad story you’ll repeat.'},
+          {key:'lucky',label:'Where we got lucky',type:'long',required:false,
+            guidance:'Name the near-misses — the things that could have made this far worse.',
+            example:'It hit off-peak; at peak traffic the same fault would have breached the customer SLA.',
+            why:'Near-misses are free lessons, but only if you write them down.',
+            placeholder:'Near-misses and close calls…'}
+        ]},
+      { id:'onboarding', code:'Onboard', title:'Onboarding / Developer Setup', d:2,
+        purpose:'Everything a new engineer needs to become productive in their first days.',
+        meta:[{key:'owner',label:'Owner'},{key:'team',label:'Team'},{key:'role',label:'Role'},{key:'start',label:'Start date'}],
+        sections:[
+          {key:'access',label:'Accounts & access',type:'check',required:true,
+            items:[{key:'sso',label:'Email & SSO'},{key:'repo',label:'Repository access'},{key:'infra',label:'Cloud / infrastructure'},{key:'tickets',label:'Ticketing & project tools'},{key:'comms',label:'Comms channels'}],
+            guidance:'Tick each access grant as it’s completed so nothing blocks day one.',
+            why:'A new hire idle on day one because access wasn’t ready is pure, avoidable cost.'},
+          {key:'env',label:'Environment setup',type:'long',required:true,
+            guidance:'Give the exact, copy-pasteable steps to a running local environment.',
+            example:'git clone …; make setup; make test — the suite should pass green before you change anything.',
+            why:'If setup isn’t written down, it lives in one person’s memory and silently rots.',
+            placeholder:'Step-by-step from zero to a running app…'},
+          {key:'arch',label:'Architecture orientation',type:'long',required:false,
+            guidance:'Point the newcomer to the right starting place and reading order for the system.',
+            example:'Start with the C4 context diagram in /docs, then the orders-service README, then shadow an on-call.',
+            why:'Context turns code-reading from archaeology into actual learning.',
+            placeholder:'Where to start, what to read…'},
+          {key:'contacts',label:'Key contacts & first tasks',type:'long',required:false,
+            guidance:'Say who to ask for what, and give a concrete first task.',
+            example:'Infra questions → #ops; product context → Dana. First task: close a “good first issue” ticket.',
+            why:'Knowing who-to-ask is the single biggest driver of time-to-first-contribution.',
+            placeholder:'Who to ask, and a first task…'}
+        ]}
+    ];
+  }
+}
+</script>
+</body>
+</html>
