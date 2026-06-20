@@ -34,7 +34,7 @@ export const FORMS_CSS = `
 
   /* ---- Main ---- */
   .main{ min-width:0; }
-  .topbar{ position:sticky; top:0; z-index:20; background:rgba(251,251,249,.92); backdrop-filter:blur(8px);
+  .topbar{ position:sticky; top:56px; z-index:20; background:rgba(251,251,249,.92); backdrop-filter:blur(8px);
     border-bottom:1px solid var(--rule); display:flex; align-items:center; justify-content:space-between; padding:13px 36px; }
   .topbar .crumbs{ font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:.04em; color:var(--muted); }
   .topbar .crumbs b{ color:var(--ink); font-weight:500; }
