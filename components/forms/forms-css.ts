@@ -178,7 +178,7 @@ export const FORMS_CSS = `
   .gcard:hover .gc-foot .arr{ opacity:1; transform:translateX(0); }
 
   /* ---- Landing ---- */
-  .landing{ position:fixed; inset:0; z-index:100; display:grid; grid-template-columns:1.05fr .95fr; background:var(--paper); }
+  .landing{ position:fixed; top:56px; left:0; right:0; bottom:0; z-index:100; display:grid; grid-template-columns:1.05fr .95fr; background:var(--paper); }
   .landing.hidden{ display:none; }
   .lnd-left{ background:var(--sidebar); color:#ECECE6; padding:40px 52px; display:flex; flex-direction:column; position:relative; overflow-y:auto; }
   .lnd-left::before{ content:""; position:absolute; inset:20px; border:1px solid rgba(230,198,88,.16); pointer-events:none; }
