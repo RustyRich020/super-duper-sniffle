@@ -5,6 +5,7 @@ import Link from "next/link";
 import { NAV_CSS } from "./nav-css";
 
 const ROUTES = [
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/", label: "Forms" },
   { href: "/notebook", label: "Notebook" },
   { href: "/workbook", label: "Workbook" },
