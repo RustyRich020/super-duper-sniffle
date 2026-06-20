@@ -19,7 +19,12 @@ export function loadSavedCreds(): SupaCreds | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as SupaCreds;
+    if (raw) {
+      const saved = JSON.parse(raw) as SupaCreds;
+      // Only honor a complete saved record; otherwise fall through to env so a
+      // stale/partial localStorage object can't permanently shadow valid creds.
+      if (saved && saved.url && saved.key) return saved;
+    }
   } catch {
     /* ignore */
   }

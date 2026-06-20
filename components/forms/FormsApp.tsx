@@ -501,14 +501,14 @@ class FormsLogic {
             .map(
               (p) =>
                 "<tr>" +
-                '<td><div class="pname">' + p.name + '</div><div class="pcode">' + p.code + "</div></td>" +
-                "<td>" + p.phase + "</td>" +
+                '<td><div class="pname">' + this.esc(p.name) + '</div><div class="pcode">' + this.esc(p.code) + "</div></td>" +
+                "<td>" + this.esc(p.phase) + "</td>" +
                 '<td><div style="display:flex;align-items:center;gap:8px"><div class="pbar" style="width:84px"><i style="width:' + p.pct + '%"></i></div><span style="font-family:\'IBM Plex Mono\';font-size:10px;color:var(--muted)">' + p.pct + "%</span></div></td>" +
                 "<td>" + this.pRag(p.rag) + "</td>" +
                 '<td style="font-family:\'IBM Plex Mono\';font-size:12px;color:' + (p.cpi < 1 ? "#C2603F" : "#4C8A50") + '">' + p.cpi.toFixed(2) + "</td>" +
                 '<td style="font-family:\'IBM Plex Mono\';font-size:12px;color:' + (p.spi < 1 ? "#C2603F" : "#4C8A50") + '">' + p.spi.toFixed(2) + "</td>" +
                 '<td style="font-family:\'IBM Plex Mono\';font-size:11px">$' + p.bac.toFixed(1) + "M</td>" +
-                "<td>" + p.risks + "</td><td>" + p.pm + "</td></tr>",
+                "<td>" + p.risks + "</td><td>" + this.esc(p.pm) + "</td></tr>",
             )
             .join("")
         : '<tr><td colspan="9" style="color:var(--muted);padding:18px 8px">No projects yet — add one above to start your live portfolio.</td></tr>') +
@@ -524,20 +524,20 @@ class FormsLogic {
       '<div class="dash-grid">' +
       '<div class="dash-card"><div class="dc-h"><h3>Top Open Risks</h3><span class="more">Risk Register · Score = L × I</span></div>' +
       (risks.length
-        ? risks.slice(0, 5).map((r) => '<div class="risk-row"><div class="risk-score" style="background:' + this.pRiskColor(r.sc || 0) + '">' + r.sc + '</div><div class="risk-body"><div class="risk-name">' + r.n + '</div><div class="risk-meta">' + r.m + "</div></div></div>").join("")
+        ? risks.slice(0, 5).map((r) => '<div class="risk-row"><div class="risk-score" style="background:' + this.pRiskColor(r.sc || 0) + '">' + r.sc + '</div><div class="risk-body"><div class="risk-name">' + this.esc(r.n) + '</div><div class="risk-meta">' + this.esc(r.m) + "</div></div></div>").join("")
         : '<div style="color:var(--muted);font-size:12.5px;padding:8px 0">No open risks logged.</div>') +
       "</div>" +
       '<div class="dash-card"><div class="dc-h"><h3>Change Control</h3><span class="more">Change Requests</span></div>' +
       '<div class="cc-stats"><div class="cc-stat"><div class="n">' + change.open + '</div><div class="l">Open</div></div><div class="cc-stat"><div class="n">' + change.pending + '</div><div class="l">Pending CAB</div></div><div class="cc-stat"><div class="n">' + change.approved + '</div><div class="l">Approved</div></div></div>' +
       '<div style="font-family:\'IBM Plex Mono\';font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;margin:15px 0 2px">Recent</div>' +
       (change.recent.length
-        ? change.recent.map((c) => { const s = (c.status || "").toLowerCase(); const rg = /appro/.test(s) ? "green" : /rej|decl/.test(s) ? "red" : "amber"; return '<div class="team-row"><span>' + c.code + " · " + c.desc + '</span><span class="rag ' + rg + '"><span class="d"></span>' + c.status + "</span></div>"; }).join("")
+        ? change.recent.map((c) => { const s = (c.status || "").toLowerCase(); const rg = /appro/.test(s) ? "green" : /rej|decl/.test(s) ? "red" : "amber"; return '<div class="team-row"><span>' + this.esc(c.code) + " · " + this.esc(c.desc) + '</span><span class="rag ' + rg + '"><span class="d"></span>' + this.esc(c.status) + "</span></div>"; }).join("")
         : '<div style="color:var(--muted);font-size:12.5px;padding:6px 0">No change requests yet.</div>') +
       "</div>" +
       "</div>" +
       '<div class="dash-grid">' +
       '<div class="dash-card"><div class="dc-h"><h3>Cost vs Budget</h3><span class="more">Spent / BAC</span></div>' +
-      (ps.length ? ps.map((p) => { const r = p.bac > 0 ? p.spent / p.bac : 0; const over = r > p.pct / 100 + 0.08; return '<div class="budget-row"><span class="bn">' + p.name.split(" ")[0] + '</span><div class="bbar"><i style="width:' + Math.round(r * 100) + "%;background:" + (over ? "#C2603F" : "var(--accent)") + '"></i></div><span class="bv">$' + p.spent.toFixed(2) + "M / $" + p.bac.toFixed(1) + "M</span></div>"; }).join("") : '<div style="color:var(--muted);font-size:12.5px;padding:8px 0">—</div>') +
+      (ps.length ? ps.map((p) => { const r = p.bac > 0 ? p.spent / p.bac : 0; const over = r > p.pct / 100 + 0.08; return '<div class="budget-row"><span class="bn">' + this.esc(p.name.split(" ")[0]) + '</span><div class="bbar"><i style="width:' + Math.round(r * 100) + "%;background:" + (over ? "#C2603F" : "var(--accent)") + '"></i></div><span class="bv">$' + p.spent.toFixed(2) + "M / $" + p.bac.toFixed(1) + "M</span></div>"; }).join("") : '<div style="color:var(--muted);font-size:12.5px;padding:8px 0">—</div>') +
       "</div>" +
       '<div class="dash-card"><div class="dc-h"><h3>Team & Resourcing</h3><span class="more">30.0 FTE</span></div>' +
       data.team.map((t) => '<div class="team-row"><span>' + t[0] + '</span><span style="font-family:\'IBM Plex Mono\';font-size:11px;color:var(--muted)">' + t[1].toFixed(1) + " FTE</span></div>").join("") +
@@ -594,8 +594,8 @@ class FormsLogic {
         .map(
           (p) =>
             '<div class="proj-status">' +
-            '<div style="flex:1;min-width:0"><div class="pname" style="font-size:14px">' + p.name + '</div><div style="font-size:12px;color:var(--muted);margin-top:2px">' + (p.note || p.phase + " phase") + "</div></div>" +
-            '<div class="ps-bar"><div class="pbar"><i style="width:' + p.pct + '%"></i></div><div style="font-family:\'IBM Plex Mono\';font-size:9px;color:var(--muted);margin-top:4px">' + p.pct + "% · " + p.phase + "</div></div>" +
+            '<div style="flex:1;min-width:0"><div class="pname" style="font-size:14px">' + this.esc(p.name) + '</div><div style="font-size:12px;color:var(--muted);margin-top:2px">' + this.esc(p.note || p.phase + " phase") + "</div></div>" +
+            '<div class="ps-bar"><div class="pbar"><i style="width:' + p.pct + '%"></i></div><div style="font-family:\'IBM Plex Mono\';font-size:9px;color:var(--muted);margin-top:4px">' + p.pct + "% · " + this.esc(p.phase) + "</div></div>" +
             '<div style="width:92px;flex:none;text-align:right">' + this.pRag(p.rag) + "</div>" +
             "</div>",
         )
@@ -650,7 +650,7 @@ class FormsLogic {
       '<div class="dash-card full"><div class="dc-h"><h3>Risk Register</h3><span class="more">' + rk.length + " open</span></div>" +
       '<table class="ptab"><thead><tr><th>Risk</th><th>Category</th><th>L</th><th>I</th><th>Score</th><th>Owner</th><th>Status</th></tr></thead><tbody>' +
       (rk.length
-        ? rk.map((r) => '<tr><td style="max-width:320px"><div class="pname" style="font-size:12.5px;font-weight:500">' + r.n + "</div></td><td>" + r.cat + '</td><td style="font-family:\'IBM Plex Mono\'">' + r.l + '</td><td style="font-family:\'IBM Plex Mono\'">' + r.i + '</td><td><span class="risk-score" style="background:' + this.pRiskColor(r.sc || 0) + ';width:26px;height:24px;border-radius:6px;display:inline-flex;font-size:11px">' + r.sc + "</span></td><td>" + r.owner + "</td><td>" + r.status + "</td></tr>").join("")
+        ? rk.map((r) => '<tr><td style="max-width:320px"><div class="pname" style="font-size:12.5px;font-weight:500">' + this.esc(r.n) + "</div></td><td>" + this.esc(r.cat) + '</td><td style="font-family:\'IBM Plex Mono\'">' + r.l + '</td><td style="font-family:\'IBM Plex Mono\'">' + r.i + '</td><td><span class="risk-score" style="background:' + this.pRiskColor(r.sc || 0) + ';width:26px;height:24px;border-radius:6px;display:inline-flex;font-size:11px">' + r.sc + "</span></td><td>" + this.esc(r.owner) + "</td><td>" + this.esc(r.status) + "</td></tr>").join("")
         : '<tr><td colspan="7" style="color:var(--muted);padding:18px 8px">No risks logged. Fill in a Risk Register form to populate this.</td></tr>') +
       "</tbody></table></div>";
     const v = document.getElementById("form"); if (v) { v.innerHTML = h; v.scrollTop = 0; }
@@ -674,7 +674,7 @@ class FormsLogic {
       this.pKpi("Active", String(ps.length)) +
       "</div>" +
       '<div class="dash-card full"><div class="dc-h"><h3>Lifecycle Position</h3><span class="more">% complete across the phase track</span></div>' +
-      ps.map((p) => '<div class="budget-row"><span class="bn" style="width:160px">' + p.name + '</span><div class="bbar" style="height:10px"><i style="width:' + p.pct + "%;background:" + (p.rag === "red" ? "#C2603F" : p.rag === "amber" ? "#C9962B" : "var(--accent)") + '"></i></div><span class="bv" style="width:120px">' + p.phase + " · " + p.pct + "%</span></div>").join("") +
+      ps.map((p) => '<div class="budget-row"><span class="bn" style="width:160px">' + this.esc(p.name) + '</span><div class="bbar" style="height:10px"><i style="width:' + p.pct + "%;background:" + (p.rag === "red" ? "#C2603F" : p.rag === "amber" ? "#C9962B" : "var(--accent)") + '"></i></div><span class="bv" style="width:120px">' + this.esc(p.phase) + " · " + p.pct + "%</span></div>").join("") +
       "</div>" +
       '<div class="dash-card full"><div class="dc-h"><h3>Milestone Schedule</h3><span class="more">Baseline vs forecast</span></div>' +
       '<table class="ptab"><thead><tr><th>Milestone</th><th>Project</th><th>Baseline</th><th>Forecast</th><th>Slip</th><th>Status</th></tr></thead><tbody>' +
@@ -701,12 +701,12 @@ class FormsLogic {
       cats.map((c) => '<div class="catbar"><span class="cn">' + c[0] + '</span><div class="cb"><i style="width:' + Math.round((c[1] / maxc) * 100) + '%"></i></div><span class="cv">$' + c[1].toFixed(1) + "M</span></div>").join("") +
       "</div>" +
       '<div class="dash-card"><div class="dc-h"><h3>Budget Burn</h3><span class="more">Spent / BAC</span></div>' +
-      ps.map((p) => { const r = p.bac > 0 ? p.spent / p.bac : 0; const over = r > p.pct / 100 + 0.08; return '<div class="budget-row"><span class="bn">' + p.name.split(" ")[0] + '</span><div class="bbar"><i style="width:' + Math.round(r * 100) + "%;background:" + (over ? "#C2603F" : "var(--accent)") + '"></i></div><span class="bv">$' + p.spent.toFixed(2) + "M / $" + p.bac.toFixed(1) + "M</span></div>"; }).join("") +
+      ps.map((p) => { const r = p.bac > 0 ? p.spent / p.bac : 0; const over = r > p.pct / 100 + 0.08; return '<div class="budget-row"><span class="bn">' + this.esc(p.name.split(" ")[0]) + '</span><div class="bbar"><i style="width:' + Math.round(r * 100) + "%;background:" + (over ? "#C2603F" : "var(--accent)") + '"></i></div><span class="bv">$' + p.spent.toFixed(2) + "M / $" + p.bac.toFixed(1) + "M</span></div>"; }).join("") +
       "</div>" +
       "</div>" +
       '<div class="dash-card full"><div class="dc-h"><h3>Earned Value by Project</h3><span class="more">EVM</span></div>' +
       '<table class="ptab"><thead><tr><th>Project</th><th>BAC</th><th>Actual (AC)</th><th>Earned (EV)</th><th>CPI</th><th>EAC</th><th>VAC</th></tr></thead><tbody>' +
-      ps.map((p) => { const ev = (p.pct / 100) * p.bac, cpi = p.spent > 0 ? ev / p.spent : 1, eac = cpi > 0 ? p.bac / cpi : p.bac, vac = p.bac - eac; return '<tr><td><div class="pname" style="font-size:13px;font-weight:500">' + p.name + '</div></td><td style="font-family:\'IBM Plex Mono\';font-size:11px">$' + p.bac.toFixed(1) + 'M</td><td style="font-family:\'IBM Plex Mono\';font-size:11px">$' + p.spent.toFixed(2) + 'M</td><td style="font-family:\'IBM Plex Mono\';font-size:11px">$' + ev.toFixed(2) + 'M</td><td style="font-family:\'IBM Plex Mono\';font-size:11px;color:' + (cpi < 1 ? "#C2603F" : "#4C8A50") + '">' + cpi.toFixed(2) + '</td><td style="font-family:\'IBM Plex Mono\';font-size:11px">$' + eac.toFixed(2) + 'M</td><td style="font-family:\'IBM Plex Mono\';font-size:11px;color:' + (vac < 0 ? "#C2603F" : "#4C8A50") + '">$' + vac.toFixed(2) + "M</td></tr>"; }).join("") +
+      ps.map((p) => { const ev = (p.pct / 100) * p.bac, cpi = p.spent > 0 ? ev / p.spent : 1, eac = cpi > 0 ? p.bac / cpi : p.bac, vac = p.bac - eac; return '<tr><td><div class="pname" style="font-size:13px;font-weight:500">' + this.esc(p.name) + '</div></td><td style="font-family:\'IBM Plex Mono\';font-size:11px">$' + p.bac.toFixed(1) + 'M</td><td style="font-family:\'IBM Plex Mono\';font-size:11px">$' + p.spent.toFixed(2) + 'M</td><td style="font-family:\'IBM Plex Mono\';font-size:11px">$' + ev.toFixed(2) + 'M</td><td style="font-family:\'IBM Plex Mono\';font-size:11px;color:' + (cpi < 1 ? "#C2603F" : "#4C8A50") + '">' + cpi.toFixed(2) + '</td><td style="font-family:\'IBM Plex Mono\';font-size:11px">$' + eac.toFixed(2) + 'M</td><td style="font-family:\'IBM Plex Mono\';font-size:11px;color:' + (vac < 0 ? "#C2603F" : "#4C8A50") + '">$' + vac.toFixed(2) + "M</td></tr>"; }).join("") +
       "</tbody></table></div>";
     const v = document.getElementById("form"); if (v) { v.innerHTML = h; v.scrollTop = 0; }
   }
@@ -735,7 +735,7 @@ class FormsLogic {
       "</div>" +
       '<div class="dash-card full"><div class="dc-h"><h3>Change Log</h3><span class="more">Cost · schedule impact</span></div>' +
       '<table class="ptab"><thead><tr><th>CR</th><th>Description</th><th>Type</th><th>Cost</th><th>Schedule</th><th>Status</th></tr></thead><tbody>' +
-      log.map((c) => '<tr><td style="font-family:\'IBM Plex Mono\';font-size:11px;color:var(--accent)">' + c.code + "</td><td>" + c.title + "</td><td>" + c.type + '</td><td style="font-family:\'IBM Plex Mono\';font-size:11px">' + c.cost + '</td><td style="font-family:\'IBM Plex Mono\';font-size:11px">' + c.sched + "</td><td>" + chip(c.status) + "</td></tr>").join("") +
+      log.map((c) => '<tr><td style="font-family:\'IBM Plex Mono\';font-size:11px;color:var(--accent)">' + this.esc(c.code) + "</td><td>" + this.esc(c.title) + "</td><td>" + this.esc(c.type) + '</td><td style="font-family:\'IBM Plex Mono\';font-size:11px">' + this.esc(c.cost) + '</td><td style="font-family:\'IBM Plex Mono\';font-size:11px">' + this.esc(c.sched) + "</td><td>" + chip(c.status) + "</td></tr>").join("") +
       "</tbody></table></div>";
     const v = document.getElementById("form"); if (v) { v.innerHTML = h; v.scrollTop = 0; }
   }
