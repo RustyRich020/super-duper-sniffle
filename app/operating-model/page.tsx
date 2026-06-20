@@ -104,7 +104,16 @@ const CSS = `
   .home-link{ display:inline-block; font-family:'IBM Plex Mono'; font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); text-decoration:none; margin-bottom:18px; }
   .home-link:hover{ color:var(--ink); }
 
-  @media (max-width:900px){ .pgrid{ grid-template-columns:repeat(2,1fr); } .ring-wrap{ grid-template-columns:1fr; } }
+  @media (max-width:900px){
+    .pgrid{ grid-template-columns:1fr 1fr; }
+    .ring-wrap{ grid-template-columns:1fr; }
+    .lane{ grid-template-columns:100px repeat(5,1fr); font-size:11px; }
+    .doc{ padding:30px 20px 60px; }
+  }
+  @media (max-width:600px){
+    .pgrid{ grid-template-columns:1fr; }
+    .lane{ overflow-x:auto; min-width:600px; }
+  }
   @media print{
     body{ background:none; }
     .doc{ max-width:none; padding:0; }

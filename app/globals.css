@@ -11,7 +11,23 @@ body {
 body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-}
-body {
   padding-top: 56px;
+}
+
+/* Accessible focus rings — visible on keyboard nav, hidden on mouse */
+:focus-visible {
+  outline: 2px solid #B5862A;
+  outline-offset: 2px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

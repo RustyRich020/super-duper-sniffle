@@ -110,6 +110,16 @@ export const FORMS_CSS = `
   .modal-foot .hint{ font-size:11.5px; color:var(--muted); max-width:48ch; line-height:1.45; }
   .iconbtn{ background:none; border:none; cursor:pointer; color:var(--muted); font-size:20px; line-height:1; }
 
+  @media (max-width:900px){
+    .app{ grid-template-columns:1fr; }
+    .side{ display:none; }
+    .topbar{ padding:13px 20px; }
+    .wrap{ padding:28px 20px 60px; }
+    .meta{ grid-template-columns:1fr 1fr; }
+    .kpi-row{ grid-template-columns:repeat(2,1fr); }
+    .gal-grid{ grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); }
+  }
+
   /* ---- Print ---- */
   @media print{
     @page{ margin:14mm; }
@@ -166,7 +176,7 @@ export const FORMS_CSS = `
   .gcard{ position:relative; border:1px solid var(--rule); border-radius:14px; background:var(--page); padding:17px 17px 14px; text-decoration:none; color:inherit;
     display:flex; flex-direction:column; gap:9px; min-height:168px; overflow:hidden; transition:border-color .18s, box-shadow .18s, transform .18s; }
   .gcard::before{ content:""; position:absolute; left:0; top:0; height:3px; width:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); opacity:0; transition:opacity .18s; }
-  .gcard:hover{ border-color:var(--accent); box-shadow:0 14px 32px rgba(40,30,12,.11); transform:translateY(-3px); }
+  .gcard:hover{ border-color:var(--accent); box-shadow:0 10px 24px rgba(40,30,12,.09); transform:translateY(-2px); }
   .gcard:hover::before{ opacity:1; }
   .gc-code{ align-self:flex-start; font-family:'IBM Plex Mono'; font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent);
     background:var(--accentbg); border:1px solid var(--accentsoft); border-radius:5px; padding:3px 7px; }
