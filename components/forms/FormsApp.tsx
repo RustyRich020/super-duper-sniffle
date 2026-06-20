@@ -1074,8 +1074,9 @@ class FormsLogic {
   }
   async afterAuth() {
     this.renderAccount();
-    if (this.user) await this.loadInstances(); else { this.byForm = {}; this.active = {}; }
+    if (this.user) await this.loadInstances(); else { this.byForm = {}; this.active = {}; this.db = {}; }
     if (this.user) await this.loadProjects();
+    if (this.user) await this.loadRemote();
     const am = document.getElementById("amodal"); if (am && this.user) am.classList.remove("open");
     if (this.user) { const h = location.hash || ""; if (!/#\/.+/.test(h)) { location.hash = "#/gallery"; return; } }
     this.route();
@@ -1165,24 +1166,24 @@ class FormsLogic {
     try {
       this.setCloud("connecting");
       this.client = getClient(url, key);
-      await this.loadRemote();
       this.supa = { url, key };
       saveCreds(this.supa);
       this.setCloud("connected");
       const cm = document.getElementById("cmodal"); if (cm) cm.classList.remove("open");
       await this.initAuth();
+      await this.loadRemote();
       this.route();
     } catch (e) { console.error(e); this.client = null; this.setCloud("error"); if (!silent) alert("Could not connect: " + ((e as Error).message || e)); }
   }
   async loadRemote() {
-    if (!this.client) return;
+    if (!this.client || !this.user) return;
     const { data, error } = await this.client.from("qq_forms").select("id,data");
     if (error) throw error;
     (data || []).forEach((r: { id?: string; data?: Rec }) => { if (r && r.id) this.db[r.id] = r.data as Rec; });
     try { localStorage.setItem(this.KEY, JSON.stringify(this.db)); } catch { /* ignore */ }
   }
   async upsertRemote(id: string) {
-    if (!this.client) return;
+    if (!this.client || !this.user) return;
     try { await this.client.from("qq_forms").upsert({ id, data: this.db[id], updated_at: new Date().toISOString() }); } catch (e) { console.error("sync", e); }
   }
   disconnect() { this.client = null; this.supa = null; clearCreds(); this.setCloud("local"); }

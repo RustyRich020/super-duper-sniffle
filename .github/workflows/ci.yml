@@ -15,6 +15,8 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - name: Lint
+        run: npm run lint
       - name: Typecheck
         run: npx tsc --noEmit
       - name: Build
@@ -24,3 +26,15 @@ jobs:
           # to local-only mode), provided here if configured as repo secrets.
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      - name: Smoke test (boot + HTTP 200 on /)
+        run: |
+          npm run start &
+          SERVER_PID=$!
+          ok=0
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000 >/dev/null; then ok=1; break; fi
+            sleep 2
+          done
+          kill $SERVER_PID 2>/dev/null || true
+          if [ "$ok" != "1" ]; then echo "Smoke test failed: app did not return 200 on /"; exit 1; fi
+          echo "Smoke test passed."
