@@ -1,5 +1,9 @@
 import Link from "next/link";
 
+export const metadata = {
+  title: "Operating Model — QQ-Studios",
+};
+
 const CSS = `
   :root{
     --ink:#222226; --muted:#6A6A6F; --faint:#9C9C98;
