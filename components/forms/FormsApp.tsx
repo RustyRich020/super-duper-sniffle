@@ -161,6 +161,9 @@ class FormsLogic {
       s.style.opacity = "1";
     }, 180);
   }
+  toast(message: string, type: "success" | "error" | "info" = "info") {
+    window.dispatchEvent(new CustomEvent("qq-toast", { detail: { message, type } }));
+  }
 
   // ---------- routing ----------
   route() {
@@ -1053,6 +1056,7 @@ class FormsLogic {
     if (this.user) await this.loadInstances(); else { this.byForm = {}; this.active = {}; this.db = {}; }
     if (this.user) await this.loadProjects();
     if (this.user) await this.loadRemote();
+    if (this.user) this.toast("Signed in as " + (this.user.email || ""), "success");
     if (this.user && (location.hash === "" || location.hash === "#/" || location.hash === "#/welcome")) {
       location.hash = "#/gallery";
     }
@@ -1147,6 +1151,7 @@ class FormsLogic {
       this.supa = { url, key };
       saveCreds(this.supa);
       this.setCloud("connected");
+      this.toast("Database connected", "success");
       const cm = document.getElementById("cmodal"); if (cm) cm.classList.remove("open");
       await this.initAuth();
       await this.loadRemote();

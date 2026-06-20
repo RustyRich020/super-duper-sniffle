@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import NavBar from "@/components/NavBar";
+import Toast from "@/components/Toast";
 
 export const metadata: Metadata = {
   title: "QQ-Studios — Documentation Workspace",
@@ -31,6 +32,7 @@ export default function RootLayout({
       <body>
         <NavBar />
         {children}
+        <Toast />
       </body>
     </html>
   );
