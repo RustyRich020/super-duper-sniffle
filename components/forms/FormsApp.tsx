@@ -161,6 +161,9 @@ class FormsLogic {
       s.style.opacity = "1";
     }, 180);
   }
+  toast(message: string, type: "success" | "error" | "info" = "info") {
+    window.dispatchEvent(new CustomEvent("qq-toast", { detail: { message, type } }));
+  }
 
   // ---------- routing ----------
   route() {
@@ -813,35 +816,11 @@ class FormsLogic {
     document.querySelectorAll(".lnd-tab").forEach((t) => ((t as HTMLElement).onclick = () => setMode((t as HTMLElement).dataset.lt || "in")));
     const sub = document.getElementById("l-submit"); if (sub) sub.onclick = () => this.landingAuth(this._lmode);
     const mag = document.getElementById("l-magic"); if (mag) mag.onclick = () => this.landingAuth("magic");
-    const br = document.getElementById("l-browse"); if (br) br.onclick = () => { location.hash = "#/gallery"; };
     const co = document.getElementById("l-continue"); if (co) co.onclick = () => { location.hash = "#/gallery"; };
     const so = document.getElementById("l-signout"); if (so) so.onclick = () => this.signOut();
     ["l-email", "l-pw"].forEach((id) => { const el = document.getElementById(id); if (el) (el as HTMLElement).onkeydown = (e: KeyboardEvent) => { if (e.key === "Enter") this.landingAuth(this._lmode); }; });
-    this.startPreviewRotation();
   }
   _lmode = "in";
-  startPreviewRotation() {
-    if (this._previewTimer) return;
-    const el = document.getElementById("lnd-preview"); if (!el) return;
-    const P = [
-      { code: "PRD", title: "Product Requirements", secs: [ { l: "Problem statement & evidence", eg: "CSV imports fail ~12% of the time.", lines: ["", "short"] }, { l: "Goals & success metrics", lines: [""] } ] },
-      { code: "Runbook", title: "Runbook", secs: [ { l: "When to use", eg: "Alert: invoice queue depth > 5k for 10 min.", lines: ["", "short"] }, { l: "Steps", lines: [""] } ] },
-      { code: "Postmortem", title: "Postmortem / RCA", secs: [ { l: "Summary & impact", eg: "Posting halted 40 min after a gateway change.", lines: ["", "short"] }, { l: "Root cause", lines: [""] } ] },
-    ];
-    const render = (n: number) => {
-      const p = P[n];
-      el.innerHTML =
-        '<div class="lp-kick">Form · ' + this.esc(p.code) + '</div><div class="lp-title">' + this.esc(p.title) + "</div>" +
-        p.secs.map((s) => '<div class="lp-sec"><div class="lp-sl">' + this.esc(s.l) + "</div>" + ((s as { eg?: string }).eg ? '<div class="lp-eg"><b>e.g.</b> ' + this.esc((s as { eg?: string }).eg) + "</div>" : "") + s.lines.map((c) => '<div class="lp-line' + (c ? " " + c : "") + '"></div>').join("") + "</div>").join("");
-    };
-    let i = 0;
-    render(0);
-    el.style.opacity = "1";
-    this._previewTimer = setInterval(() => {
-      el.style.opacity = "0";
-      setTimeout(() => { i = (i + 1) % P.length; render(i); el.style.opacity = "1"; }, 560);
-    }, 4200);
-  }
   landingMsg(t: string, err?: number) { const m = document.getElementById("l-msg"); if (m) { m.textContent = t || ""; m.style.color = err ? "#9A6B1F" : "var(--muted)"; } }
   async landingAuth(mode: string) {
     if (!this.client) { this.landingMsg("Connecting to the database — try again in a moment.", 1); return; }
@@ -1077,8 +1056,11 @@ class FormsLogic {
     if (this.user) await this.loadInstances(); else { this.byForm = {}; this.active = {}; this.db = {}; }
     if (this.user) await this.loadProjects();
     if (this.user) await this.loadRemote();
+    if (this.user) this.toast("Signed in as " + (this.user.email || ""), "success");
+    if (this.user && (location.hash === "" || location.hash === "#/" || location.hash === "#/welcome")) {
+      location.hash = "#/gallery";
+    }
     const am = document.getElementById("amodal"); if (am && this.user) am.classList.remove("open");
-    if (this.user) { const h = location.hash || ""; if (!/#\/.+/.test(h)) { location.hash = "#/gallery"; return; } }
     this.route();
   }
   renderAccount() {
@@ -1169,6 +1151,7 @@ class FormsLogic {
       this.supa = { url, key };
       saveCreds(this.supa);
       this.setCloud("connected");
+      this.toast("Database connected", "success");
       const cm = document.getElementById("cmodal"); if (cm) cm.classList.remove("open");
       await this.initAuth();
       await this.loadRemote();
@@ -1370,56 +1353,35 @@ export default function FormsApp() {
         </div>
       </div>
       <div id="landing" className="landing hidden">
-        <div className="lnd-left">
-          <div className="lnd-brand">
+        <div className="lnd-card">
+          <div className="lnd-card-brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/qq-logo.png" alt="QQ Studios" /><span>QQ-Studios</span>
+            <img src="/assets/qq-logo.png" alt="QQ Studios" />
+            <span>QQ-Studios</span>
           </div>
-          <div className="lnd-hero">
-            <div className="lnd-kicker">The Development Documentation System</div>
-            <h1 className="lnd-title">Never start from a <em>blank page.</em></h1>
-            <p className="lnd-sub">Seventy-seven proven templates &mdash; from PRDs and ADRs to runbooks, postmortems, and compliance matrices &mdash; organized across the eight disciplines of software documentation. Every field carries a real example and the reason it matters, so you never start from a blank page.</p>
-            <ul className="lnd-feats">
-              <li><b>77 document types</b>, organized across 8 disciplines</li>
-              <li>Every field guided by a <b>concrete example</b> and why it matters</li>
-              <li>Fill on screen &mdash; <b>auto-saved privately</b> to your account</li>
-              <li>Companion to the printed <b>Reference Book</b> &amp; <b>Forms Workbook</b></li>
-            </ul>
+          <h2>Sign in to your workspace</h2>
+          <p className="lnd-subtitle">77 guided document templates, auto-saved to your account.</p>
+          <div className="lnd-tabs">
+            <button className="lnd-tab active" data-lt="in">Sign in</button>
+            <button className="lnd-tab" data-lt="up">Create account</button>
           </div>
-          <div className="lnd-foot">QQ-Studios &middot; Forms Workspace &middot; 2026</div>
-        </div>
-        <div className="lnd-right">
-          <div className="lnd-rstack">
-            <div className="lnd-preview" id="lnd-preview" aria-hidden="true">
-              <div className="lp-kick">Form · PRD</div>
-              <div className="lp-title">Product Requirements</div>
-              <div className="lp-sec"><div className="lp-sl">Problem statement &amp; evidence</div><div className="lp-eg"><b>e.g.</b> CSV imports fail ~12% of the time.</div><div className="lp-line"></div><div className="lp-line short"></div></div>
-              <div className="lp-sec"><div className="lp-sl">Goals &amp; success metrics</div><div className="lp-line"></div></div>
-            </div>
-            <div className="lnd-card">
-              <div className="lnd-tabs"><button className="lnd-tab active" data-lt="in">Sign in</button><button className="lnd-tab" data-lt="up">Create account</button></div>
-              <div id="lnd-auth">
-                <label className="lnd-fl">Email</label>
-                <input id="l-email" type="email" autoComplete="username" placeholder="you@company.com" />
-                <label className="lnd-fl">Password</label>
-                <input id="l-pw" type="password" autoComplete="current-password" placeholder="••••••••" />
-                <p id="l-msg" className="lnd-msg"></p>
-                <button className="lnd-primary" id="l-submit">Sign in</button>
-                <button className="lnd-ghost" id="l-magic">Email me a magic link instead</button>
-              </div>
-              <div id="lnd-signed" style={{ display: "none" }}>
-                <p className="lnd-signed-txt">You&apos;re signed in as <b id="l-who"></b>.</p>
-                <button className="lnd-primary" id="l-continue">Continue to your forms →</button>
-                <button className="lnd-ghost" id="l-signout">Sign out</button>
-              </div>
-              <div className="lnd-sep"><span>or</span></div>
-              <button className="lnd-browse" id="l-browse">Browse the form gallery →</button>
-              <p className="lnd-note">Browse and fill forms without an account — sign in to save them. <span id="l-cloud" className="lnd-cloud"></span></p>
-              <p className="lnd-note" style={{ marginTop: "10px" }}>
-                <a href="/notebook">Notebook</a> · <a href="/workbook">Workbook</a> · <a href="/operating-model">Operating Model</a> · <a href="/governance-reports">Governance Reports</a>
-              </p>
-            </div>
+          <div id="lnd-auth">
+            <label className="lnd-fl">Email</label>
+            <input id="l-email" type="email" autoComplete="username" placeholder="you@company.com" />
+            <label className="lnd-fl">Password</label>
+            <input id="l-pw" type="password" autoComplete="current-password" placeholder="••••••••" />
+            <p id="l-msg" className="lnd-msg"></p>
+            <button className="lnd-primary" id="l-submit">Sign in</button>
+            <button className="lnd-ghost" id="l-magic">Email me a magic link instead</button>
           </div>
+          <div id="lnd-signed" style={{ display: "none" }}>
+            <p className="lnd-signed-txt">Signed in as <b id="l-who"></b></p>
+            <button className="lnd-primary" id="l-continue">Continue to your forms</button>
+            <button className="lnd-ghost" id="l-signout">Sign out</button>
+          </div>
+          <p className="lnd-note">
+            Sign in to save your work. <span id="l-cloud" className="lnd-cloud"></span>
+          </p>
         </div>
       </div>
     </div>

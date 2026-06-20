@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import NavBar from "@/components/NavBar";
+import Toast from "@/components/Toast";
 
 export const metadata: Metadata = {
   title: "QQ-Studios — Documentation Workspace",
   description:
     "The Development Documentation System — 79 guided templates, a PMBOK project planner, paginated reference book, forms workbook, and governance reports.",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({
@@ -26,7 +29,11 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <NavBar />
+        {children}
+        <Toast />
+      </body>
     </html>
   );
 }
