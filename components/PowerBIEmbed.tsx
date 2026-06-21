@@ -25,11 +25,26 @@ export default function PowerBIEmbed() {
       .catch((e) => setError(e.message));
   }, []);
 
+  const isAuthError = error === "Sign in to view reports";
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: POWERBI_CSS }} />
       {error ? (
-        <div className="pbi-error">{error}</div>
+        <div className={isAuthError ? "pbi-auth" : "pbi-error"}>
+          {isAuthError ? (
+            <>
+              <div className="pbi-auth-icon">&#128274;</div>
+              <p className="pbi-auth-heading">Sign in to view reports</p>
+              <p className="pbi-auth-detail">
+                Connect your database and sign in on the{" "}
+                <a href="/">Forms page</a> to access Power BI dashboards.
+              </p>
+            </>
+          ) : (
+            error
+          )}
+        </div>
       ) : !config ? (
         <div className="pbi-loading">Loading report...</div>
       ) : (
