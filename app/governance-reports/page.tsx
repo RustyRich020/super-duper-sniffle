@@ -1,12 +1,14 @@
-// Theragen Governance Reports — paginated A4 governance packet (cover,
-// Executive Summary, five reports) ported from the fixed-sheet prototype.
-// The whole packet is built imperatively by the GovernancePacket client
-// component on mount; see components/governance/.
-import GovernancePacket from "../../components/governance/GovernancePacket";
+import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Governance & Status Reports — QQ-Studios",
 };
+
+const GovernancePacket = dynamic(
+  () => import("@/components/governance/GovernancePacket"),
+  { ssr: false }
+);
 
 export default function GovernanceReportsPage() {
   return <GovernancePacket />;
