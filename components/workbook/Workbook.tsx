@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DOMAINS, FORMS, type RawForm, type RawSection } from "@/lib/forms-data";
 import { FORMS_RICH } from "@/lib/forms-rich";
 
@@ -349,8 +349,8 @@ class Builder {
 
 export default function Workbook() {
   const rootRef = useRef<HTMLDivElement>(null);
-  const loadingRef = useRef<HTMLDivElement>(null);
   const built = useRef(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (built.current) return;
@@ -372,7 +372,7 @@ export default function Workbook() {
         // eslint-disable-next-line no-console
         console.error(e);
       }
-      if (loadingRef.current) loadingRef.current.remove();
+      setLoading(false);
     };
 
     // Wait for fonts so the client-side page-fit measurements are accurate.
@@ -395,10 +395,12 @@ export default function Workbook() {
         <a href="/">← Home</a>
         <a href="/notebook">Reference Notebook ↗</a>
       </nav>
-      <div id="loading" ref={loadingRef}>
-        <div className="dot"></div>
-        <span>Assembling the workbook…</span>
-      </div>
+      {loading && (
+        <div id="loading">
+          <div className="dot"></div>
+          <span>Assembling the workbook…</span>
+        </div>
+      )}
       <div id="paged-root" ref={rootRef}></div>
     </>
   );
