@@ -79,7 +79,6 @@ class FormsLogic {
   _st: ReturnType<typeof setTimeout> | null = null;
   _authSub = false;
   _applyLean: (() => void) | null = null;
-  _previewTimer: ReturnType<typeof setInterval> | null = null;
   _planner: PlannerData | null = null;
   _plannerKey = "";
   _plannerArea = "";
@@ -128,7 +127,6 @@ class FormsLogic {
   _hashHandler: (() => void) | null = null;
   destroy() {
     if (this._hashHandler) window.removeEventListener("hashchange", this._hashHandler);
-    if (this._previewTimer) clearInterval(this._previewTimer);
   }
 
   currentId() {
