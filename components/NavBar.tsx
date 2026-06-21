@@ -11,6 +11,7 @@ const ROUTES = [
   { href: "/workbook", label: "Workbook" },
   { href: "/operating-model", label: "Operating Model" },
   { href: "/governance-reports", label: "Governance" },
+  { href: "/reports", label: "Reports" },
 ];
 
 export default function NavBar() {

@@ -226,6 +226,15 @@ export const FORMS_CSS = `
   .lnd-note{ font-size:11px; line-height:1.5; color:var(--faint); margin:18px 0 0;
     text-align:center; }
   .lnd-cloud{ display:block; margin-top:4px; font-family:'IBM Plex Mono'; font-size:10px; }
+  .lnd-sep{ display:flex; align-items:center; gap:12px; margin:16px 0; color:var(--faint);
+    font-family:'IBM Plex Mono'; font-size:10px; letter-spacing:.1em; text-transform:uppercase; }
+  .lnd-sep::before, .lnd-sep::after{ content:""; flex:1; height:1px; background:var(--rule); }
+  .lnd-microsoft{ width:100%; font-family:'IBM Plex Sans'; font-weight:500; font-size:13.5px;
+    padding:11px; border-radius:8px; border:1px solid var(--line); background:var(--field);
+    color:var(--ink); cursor:pointer; display:flex; align-items:center; justify-content:center;
+    gap:8px; margin-top:12px; transition:border-color .15s, color .15s; }
+  .lnd-microsoft:hover{ border-color:var(--accent); color:var(--accent); }
+  .lnd-microsoft svg{ width:16px; height:16px; flex:none; }
   @media (max-width:500px){ .lnd-card{ margin:0 16px; padding:28px 24px 22px; } }
 
   /* ---- Planner / PMBOK dashboard ---- */

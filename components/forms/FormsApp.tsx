@@ -816,6 +816,14 @@ class FormsLogic {
     document.querySelectorAll(".lnd-tab").forEach((t) => ((t as HTMLElement).onclick = () => setMode((t as HTMLElement).dataset.lt || "in")));
     const sub = document.getElementById("l-submit"); if (sub) sub.onclick = () => this.landingAuth(this._lmode);
     const mag = document.getElementById("l-magic"); if (mag) mag.onclick = () => this.landingAuth("magic");
+    const ms = document.getElementById("l-microsoft");
+    if (ms) ms.onclick = () => {
+      if (!this.client) { this.landingMsg("Connecting to database — try again.", 1); return; }
+      this.client.auth.signInWithOAuth({
+        provider: "azure",
+        options: { redirectTo: window.location.origin },
+      });
+    };
     const co = document.getElementById("l-continue"); if (co) co.onclick = () => { location.hash = "#/gallery"; };
     const so = document.getElementById("l-signout"); if (so) so.onclick = () => this.signOut();
     ["l-email", "l-pw"].forEach((id) => { const el = document.getElementById(id); if (el) (el as HTMLElement).onkeydown = (e: KeyboardEvent) => { if (e.key === "Enter") this.landingAuth(this._lmode); }; });
@@ -1373,6 +1381,11 @@ export default function FormsApp() {
             <p id="l-msg" className="lnd-msg"></p>
             <button className="lnd-primary" id="l-submit">Sign in</button>
             <button className="lnd-ghost" id="l-magic">Email me a magic link instead</button>
+                <div className="lnd-sep"><span>or</span></div>
+                <button className="lnd-microsoft" id="l-microsoft">
+                  <svg viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
+                  Sign in with Microsoft
+                </button>
           </div>
           <div id="lnd-signed" style={{ display: "none" }}>
             <p className="lnd-signed-txt">Signed in as <b id="l-who"></b></p>
