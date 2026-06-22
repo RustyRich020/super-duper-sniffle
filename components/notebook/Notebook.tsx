@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { marked } from "marked";
 import { NOTEBOOK_CSS } from "./styles";
 import { CHAPTERS, type Chapter } from "./chapters";
@@ -309,6 +309,7 @@ class Paginator {
 export default function Notebook() {
   const rootRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (startedRef.current) return;
@@ -329,8 +330,7 @@ export default function Notebook() {
         root.innerHTML =
           '<div style="padding:40px;font-family:monospace;color:#A8482A">Build error: ' + msg + "</div>";
       } finally {
-        const ld = document.getElementById("loading");
-        if (ld) ld.remove();
+        setLoading(false);
       }
     };
     run();
@@ -343,10 +343,12 @@ export default function Notebook() {
         <a href="/">← Home</a>
         <a href="/workbook">Forms Workbook ↗</a>
       </nav>
-      <div id="loading">
-        <div className="dot" />
-        <span>Binding the notebook…</span>
-      </div>
+      {loading && (
+        <div id="loading">
+          <div className="dot" />
+          <span>Binding the notebook…</span>
+        </div>
+      )}
       <div id="paged-root" ref={rootRef} />
     </>
   );

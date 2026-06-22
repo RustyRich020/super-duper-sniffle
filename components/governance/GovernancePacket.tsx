@@ -5,7 +5,7 @@
 // container) is preserved verbatim in spirit: on mount we build the whole
 // packet into a container ref using the prototype's logic. No Paged.js, no
 // support.js. Inline sample data for all five reports is reproduced verbatim.
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GOVERNANCE_CSS } from "./styles";
 import { loadLive, type LiveData, type ProjectRow } from "./loadLive";
 
@@ -1285,6 +1285,7 @@ export default function GovernancePacket() {
   const rootRef = useRef<HTMLDivElement>(null);
   const toolsRef = useRef<HTMLDivElement>(null);
   const started = useRef(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (started.current) return;
@@ -1322,8 +1323,7 @@ export default function GovernancePacket() {
           (e instanceof Error ? e.message : String(e)) +
           "</div>";
       }
-      const ld = document.getElementById("gov-loading");
-      if (ld) ld.remove();
+      setLoading(false);
       b.mountControls();
     })();
 
@@ -1337,10 +1337,12 @@ export default function GovernancePacket() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: GOVERNANCE_CSS }} />
-      <div id="gov-loading">
-        <div className="sp" />
-        <span>Compiling the governance packet…</span>
-      </div>
+      {loading && (
+        <div id="gov-loading">
+          <div className="sp" />
+          <span>Compiling the governance packet…</span>
+        </div>
+      )}
       <a id="homelink" href="/">
         ← Home
       </a>
