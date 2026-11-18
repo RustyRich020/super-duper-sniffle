@@ -28,6 +28,21 @@ export const authOptions: NextAuthOptions = {
           prompt: "select_account",
         },
       },
+      profile(profile) {
+        const email = String(
+          profile.email || profile.preferred_username || profile.upn || "",
+        )
+          .trim()
+          .toLowerCase();
+
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email,
+          image: null,
+          tenantId: profile.tid,
+        };
+      },
     }),
   ],
   session: { strategy: "jwt", maxAge: 8 * 60 * 60 },
@@ -36,17 +51,15 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, profile }) {
       const expectedTenant = required("AZURE_TENANT_ID").toLowerCase();
       const entraProfile = profile as
-        | { email?: string; preferred_username?: string; tid?: string; upn?: string }
+        | { email?: string; tenantId?: string }
         | undefined;
-      const tenant = String(entraProfile?.tid || "").toLowerCase();
+      const tenant = String(entraProfile?.tenantId || "").toLowerCase();
       if (!tenant || tenant !== expectedTenant) return false;
 
       const allowed = allowedEmails();
       const identities = [
         user.email,
         entraProfile?.email,
-        entraProfile?.preferred_username,
-        entraProfile?.upn,
       ]
         .map((value) => value?.trim().toLowerCase() || "")
         .filter(Boolean);
@@ -54,7 +67,9 @@ export const authOptions: NextAuthOptions = {
       return allowed.size > 0 && identities.some((identity) => allowed.has(identity));
     },
     async jwt({ token, profile }) {
-      if (profile) token.tenantId = (profile as { tid?: string }).tid;
+      if (profile) {
+        token.tenantId = (profile as { tenantId?: string }).tenantId;
+      }
       return token;
     },
     async session({ session, token }) {
