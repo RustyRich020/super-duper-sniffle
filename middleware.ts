@@ -2,6 +2,14 @@ import { withAuth } from "next-auth/middleware";
 
 export default withAuth({
   pages: { signIn: "/login" },
+  cookies: {
+    sessionToken: {
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-qq-workspace-session"
+          : "qq-workspace-session",
+    },
+  },
   callbacks: {
     authorized: ({ token }) =>
       Boolean(
