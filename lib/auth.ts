@@ -49,12 +49,9 @@ export const authOptions: NextAuthOptions = {
   pages: { signIn: "/login", error: "/login" },
   callbacks: {
     async signIn({ user, profile }) {
-      const expectedTenant = required("AZURE_TENANT_ID").toLowerCase();
       const entraProfile = profile as
-        | { email?: string; tenantId?: string }
+        | { email?: string }
         | undefined;
-      const tenant = String(entraProfile?.tenantId || "").toLowerCase();
-      if (!tenant || tenant !== expectedTenant) return false;
 
       const allowed = allowedEmails();
       const identities = [
@@ -68,7 +65,9 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, profile }) {
       if (profile) {
-        token.tenantId = (profile as { tenantId?: string }).tenantId;
+        // The provider's authority is tenant-specific, so a successful token
+        // exchange has already been restricted to this configured tenant.
+        token.tenantId = required("AZURE_TENANT_ID");
       }
       return token;
     },
