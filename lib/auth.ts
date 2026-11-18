@@ -46,6 +46,10 @@ export const authOptions: NextAuthOptions = {
       const error = (metadata instanceof Error ? metadata : metadata?.error) as
         | (Error & { code?: string; type?: string; error?: string })
         | undefined;
+      const safeMessage = (error?.message || "")
+        .replace(/https?:\/\/\S+/gi, "[redacted-url]")
+        .replace(/[A-Za-z0-9_-]{40,}/g, "[redacted]")
+        .slice(0, 320);
       console.error(
         JSON.stringify({
           event: "next-auth-error",
@@ -53,6 +57,7 @@ export const authOptions: NextAuthOptions = {
           errorName: error?.name || null,
           errorCode: error?.code || error?.error || null,
           errorType: error?.type || null,
+          safeMessage: safeMessage || null,
         }),
       );
     },
