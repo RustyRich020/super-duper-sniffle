@@ -35,12 +35,23 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, profile }) {
       const expectedTenant = required("AZURE_TENANT_ID").toLowerCase();
-      const tenant = String((profile as { tid?: string } | undefined)?.tid || "").toLowerCase();
+      const entraProfile = profile as
+        | { email?: string; preferred_username?: string; tid?: string; upn?: string }
+        | undefined;
+      const tenant = String(entraProfile?.tid || "").toLowerCase();
       if (!tenant || tenant !== expectedTenant) return false;
 
       const allowed = allowedEmails();
-      const email = user.email?.trim().toLowerCase() || "";
-      return allowed.size > 0 && allowed.has(email);
+      const identities = [
+        user.email,
+        entraProfile?.email,
+        entraProfile?.preferred_username,
+        entraProfile?.upn,
+      ]
+        .map((value) => value?.trim().toLowerCase() || "")
+        .filter(Boolean);
+
+      return allowed.size > 0 && identities.some((identity) => allowed.has(identity));
     },
     async jwt({ token, profile }) {
       if (profile) token.tenantId = (profile as { tid?: string }).tid;
