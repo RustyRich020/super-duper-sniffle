@@ -6,7 +6,8 @@
 // body; all behavior is attached in a run-once useEffect that drives the same
 // imperative innerHTML rendering and document.getElementById wiring the
 // prototype used. Model logic (defs, schema) comes from lib/forms-model;
-// Supabase comes from lib/supabase; planner sample data from lib/planner-sample.
+// Local draft persistence is retained; cloud persistence stays disabled until
+// an authenticated server-side data provider is approved.
 
 import { useEffect, useRef } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -23,13 +24,6 @@ import {
   type FormDef,
   type Section,
 } from "@/lib/forms-model";
-import {
-  getClient,
-  loadSavedCreds,
-  saveCreds,
-  clearCreds,
-  ENV_SUPABASE,
-} from "@/lib/supabase";
 import { getSampleData, type PlannerData, type PlannerRisk } from "@/lib/planner-sample";
 import { FORMS_CSS } from "./forms-css";
 
@@ -66,7 +60,6 @@ class FormsLogic {
   domains: string[] = [];
   collapsed = new Set<number>();
   client: SupabaseClient | null = null;
-  supa: { url: string; key: string } | null = null;
   user: SUser | null = null;
   byForm: Record<string, Sub[]> = {};
   active: Record<string, string | null> = {};
@@ -116,9 +109,6 @@ class FormsLogic {
     this.renderIndex();
     this.wireChrome();
     this.initViews();
-    this.initLanding();
-    const ss = document.getElementById("supa-sql");
-    if (ss) ss.textContent = this.supaSQL();
     this.initBackend();
     this._hashHandler = () => this.route();
     window.addEventListener("hashchange", this._hashHandler);
@@ -169,10 +159,9 @@ class FormsLogic {
     const m = h.match(/#\/(.+)/);
     const id = m ? decodeURIComponent(m[1]) : "";
     if (id === "" || id === "welcome") {
-      this.showLanding();
+      location.replace("#/gallery");
       return;
     }
-    this.hideLanding();
     const v = document.getElementById("form");
     if (v) {
       v.classList.remove("gallery-mode");
@@ -801,59 +790,6 @@ class FormsLogic {
     const v = document.getElementById("form"); if (v) { v.innerHTML = h; v.scrollTop = 0; }
   }
 
-  // ---------- landing ----------
-  initLanding() {
-    this._lmode = "in";
-    const setMode = (mode: string) => {
-      this._lmode = mode;
-      document.querySelectorAll(".lnd-tab").forEach((t) => t.classList.toggle("active", (t as HTMLElement).dataset.lt === mode));
-      const pw = document.getElementById("l-pw"); if (pw) pw.setAttribute("autocomplete", mode === "up" ? "new-password" : "current-password");
-      const sb = document.getElementById("l-submit"); if (sb) sb.textContent = mode === "up" ? "Create account" : "Sign in";
-      this.landingMsg("");
-    };
-    document.querySelectorAll(".lnd-tab").forEach((t) => ((t as HTMLElement).onclick = () => setMode((t as HTMLElement).dataset.lt || "in")));
-    const sub = document.getElementById("l-submit"); if (sub) sub.onclick = () => this.landingAuth(this._lmode);
-    const mag = document.getElementById("l-magic"); if (mag) mag.onclick = () => this.landingAuth("magic");
-    const ms = document.getElementById("l-microsoft");
-    if (ms) ms.onclick = () => {
-      if (!this.client) { this.landingMsg("Connecting to database — try again.", 1); return; }
-      this.client.auth.signInWithOAuth({
-        provider: "azure",
-        options: { redirectTo: window.location.origin },
-      });
-    };
-    const co = document.getElementById("l-continue"); if (co) co.onclick = () => { location.hash = "#/gallery"; };
-    const so = document.getElementById("l-signout"); if (so) so.onclick = () => this.signOut();
-    ["l-email", "l-pw"].forEach((id) => { const el = document.getElementById(id); if (el) (el as HTMLElement).onkeydown = (e: KeyboardEvent) => { if (e.key === "Enter") this.landingAuth(this._lmode); }; });
-  }
-  _lmode = "in";
-  landingMsg(t: string, err?: number) { const m = document.getElementById("l-msg"); if (m) { m.textContent = t || ""; m.style.color = err ? "#9A6B1F" : "var(--muted)"; } }
-  async landingAuth(mode: string) {
-    if (!this.client) { this.landingMsg("Connecting to the database — try again in a moment.", 1); return; }
-    const email = ((document.getElementById("l-email") as HTMLInputElement).value || "").trim();
-    const pw = (document.getElementById("l-pw") as HTMLInputElement).value || "";
-    if (!email) { this.landingMsg("Enter your email.", 1); return; }
-    if (mode !== "magic" && !pw) { this.landingMsg("Enter a password.", 1); return; }
-    try {
-      if (mode === "magic") { const { error } = await this.client.auth.signInWithOtp({ email }); if (error) throw error; this.landingMsg("Check your email for a sign-in link."); return; }
-      if (mode === "up") { const { error } = await this.client.auth.signUp({ email, password: pw }); if (error) throw error; this.landingMsg("Account created — signing you in…"); return; }
-      const { error } = await this.client.auth.signInWithPassword({ email, password: pw }); if (error) throw error;
-      this.landingMsg("Signed in — taking you in…");
-    } catch (e) { this.landingMsg((e as Error).message || String(e), 1); }
-  }
-  showLanding() {
-    const l = document.getElementById("landing"); if (l) l.classList.remove("hidden");
-    const signed = !!this.user;
-    const auth = document.getElementById("lnd-auth"); const sg = document.getElementById("lnd-signed");
-    const tabs = document.querySelector(".lnd-tabs") as HTMLElement | null;
-    if (auth) (auth as HTMLElement).style.display = signed ? "none" : "";
-    if (sg) (sg as HTMLElement).style.display = signed ? "" : "none";
-    if (tabs) tabs.style.display = signed ? "none" : "";
-    if (signed) { const who = document.getElementById("l-who"); if (who) who.textContent = (this.user && this.user.email) || "your account"; }
-    const lc = document.getElementById("l-cloud"); if (lc) lc.textContent = this.client ? "● Database connected" : "○ No database connected";
-  }
-  hideLanding() { const l = document.getElementById("landing"); if (l) l.classList.add("hidden"); }
-
   // ---------- form rendering ----------
   renderForm(def: FormDef) {
     const cr = document.getElementById("crumbs"); if (cr) cr.innerHTML = this.esc(this.domains[def.d]) + " &nbsp;/&nbsp; <b>" + this.esc(def.title) + "</b>";
@@ -939,7 +875,6 @@ class FormsLogic {
     };
     v.onclick = (e: Event) => {
       const tgt = e.target as HTMLElement;
-      if (tgt.id === "inst-signin") { this.openAuth(); return; }
       if (tgt.id === "inst-new") { this.newInstance(def); return; }
       if (tgt.id === "inst-del") { this.deleteInstance(def); return; }
       const add = tgt.closest("[data-add]") as HTMLElement | null;
@@ -1028,23 +963,8 @@ class FormsLogic {
         const g = h.parentElement as HTMLElement; g.classList.toggle("collapsed"); const di = +(h.dataset.toggle as string);
         if (g.classList.contains("collapsed")) this.collapsed.add(di); else this.collapsed.delete(di);
       });
-    const cm = document.getElementById("cmodal");
-    const bc = document.getElementById("btn-connect");
-    if (bc && cm) bc.onclick = () => { if (this.supa) { (document.getElementById("c-url") as HTMLInputElement).value = this.supa.url; (document.getElementById("c-key") as HTMLInputElement).value = this.supa.key; } cm.classList.add("open"); };
-    const cclose = document.getElementById("c-close"); if (cclose && cm) cclose.onclick = () => cm.classList.remove("open");
-    const cclose2 = document.getElementById("c-close2"); if (cclose2 && cm) cclose2.onclick = () => cm.classList.remove("open");
-    if (cm) cm.onclick = (e: Event) => { if (e.target === cm) cm.classList.remove("open"); };
-    const cconnect = document.getElementById("c-connect");
-    if (cconnect) cconnect.onclick = () => { const u = (document.getElementById("c-url") as HTMLInputElement).value.trim(), k = (document.getElementById("c-key") as HTMLInputElement).value.trim(); if (u && k) this.connect(u, k, false); };
-    const cdis = document.getElementById("c-disconnect"); if (cdis && cm) cdis.onclick = () => { this.disconnect(); cm.classList.remove("open"); };
     const ba = document.getElementById("btn-account");
-    if (ba) ba.onclick = () => { if (this.user) { if (confirm("Sign out of " + ((this.user.email) || "this account") + "?")) this.signOut(); } else this.openAuth(); };
-    const am = document.getElementById("amodal");
-    const aclose = document.getElementById("a-close"); if (aclose && am) aclose.onclick = () => am.classList.remove("open");
-    if (am) am.onclick = (e: Event) => { if (e.target === am) am.classList.remove("open"); };
-    const asignin = document.getElementById("a-signin"); if (asignin) asignin.onclick = () => this.doAuth("in");
-    const asignup = document.getElementById("a-signup"); if (asignup) asignup.onclick = () => this.doAuth("up");
-    const amagic = document.getElementById("a-magic"); if (amagic) amagic.onclick = () => this.doAuth("magic");
+    if (ba) ba.onclick = () => window.location.assign("/api/auth/signout?callbackUrl=/login");
   }
 
   // ---------- auth + multi-record ----------
@@ -1066,29 +986,13 @@ class FormsLogic {
     if (this.user && (location.hash === "" || location.hash === "#/" || location.hash === "#/welcome")) {
       location.hash = "#/gallery";
     }
-    const am = document.getElementById("amodal"); if (am && this.user) am.classList.remove("open");
     this.route();
   }
   renderAccount() {
     const b = document.getElementById("btn-account"); if (!b) return;
-    b.textContent = this.user ? (this.user.email || "Account") : "Sign in";
-    b.classList.toggle("primary", !this.user);
+    b.textContent = "Sign out";
+    b.classList.remove("primary");
   }
-  openAuth() { const a = document.getElementById("amodal"); if (a) { this.authMsg(""); a.classList.add("open"); } }
-  authMsg(t: string, err?: number) { const m = document.getElementById("a-msg"); if (m) { m.textContent = t || ""; m.style.color = err ? "#9A6B1F" : "var(--muted)"; } }
-  async doAuth(mode: string) {
-    if (!this.client) { this.authMsg("Connect a database first (Connect DB).", 1); return; }
-    const email = ((document.getElementById("a-email") as HTMLInputElement).value || "").trim();
-    const pw = (document.getElementById("a-pw") as HTMLInputElement).value || "";
-    if (!email) { this.authMsg("Enter your email.", 1); return; }
-    try {
-      if (mode === "magic") { const { error } = await this.client.auth.signInWithOtp({ email }); if (error) throw error; this.authMsg("Check your email for a sign-in link."); return; }
-      if (mode === "up") { const { error } = await this.client.auth.signUp({ email, password: pw }); if (error) throw error; this.authMsg("Account created. If email confirmation is on, confirm via email, then sign in."); return; }
-      const { error } = await this.client.auth.signInWithPassword({ email, password: pw }); if (error) throw error;
-      this.authMsg("Signed in.");
-    } catch (e) { this.authMsg((e as Error).message || String(e), 1); }
-  }
-  async signOut() { try { if (this.client) await this.client.auth.signOut(); } catch { /* ignore */ } this.user = null; this.afterAuth(); }
 
   async loadInstances() { this.byForm = {}; this.active = {}; this.loaded = {}; }
   async loadProjects() {
@@ -1110,7 +1014,7 @@ class FormsLogic {
   }
   instbarHTML(def: FormDef) {
     if (!this.user) {
-      return '<div class="instbar local">Editing a local draft. <a id="inst-signin">Sign in</a> to save multiple named submissions per form to your account.</div>';
+      return '<div class="instbar local">Editing a local draft. Microsoft workspace access is active; cloud persistence is disabled until the secured data API is configured.</div>';
     }
     const list = this.byForm[def.id] || [];
     const cur = this.currentSub(def.id);
@@ -1137,32 +1041,17 @@ class FormsLogic {
     this.renderForm(def);
   }
 
-  // ---------- Supabase backend ----------
+  // ---------- server data provider (disabled in this release) ----------
   initBackend() {
-    this.supa = loadSavedCreds();
-    if (!this.supa && ENV_SUPABASE.url && ENV_SUPABASE.key) this.supa = { ...ENV_SUPABASE };
-    if (this.supa && this.supa.url && this.supa.key) { this.setCloud("connecting"); this.connect(this.supa.url, this.supa.key, true); }
-    else this.setCloud("local");
+    this.client = null;
+    this.user = null;
+    this.setCloud("disabled");
   }
   setCloud(state: string) {
     const c = document.getElementById("cloud"); if (!c) return;
     c.classList.toggle("on", state === "connected");
-    const label = ({ local: "Local only", connecting: "Connecting…", connected: "Connected", error: "Connect failed" } as Record<string, string>)[state] || state;
+    const label = ({ local: "Local only", disabled: "Cloud save disabled", connecting: "Connecting…", connected: "Connected", error: "Connect failed" } as Record<string, string>)[state] || state;
     const cl = c.querySelector(".cl"); if (cl) cl.textContent = label;
-  }
-  async connect(url: string, key: string, silent?: boolean) {
-    try {
-      this.setCloud("connecting");
-      this.client = getClient(url, key);
-      this.supa = { url, key };
-      saveCreds(this.supa);
-      this.setCloud("connected");
-      this.toast("Database connected", "success");
-      const cm = document.getElementById("cmodal"); if (cm) cm.classList.remove("open");
-      await this.initAuth();
-      await this.loadRemote();
-      this.route();
-    } catch (e) { console.error(e); this.client = null; this.setCloud("error"); if (!silent) alert("Could not connect: " + ((e as Error).message || e)); }
   }
   async loadRemote() {
     if (!this.client || !this.user) return;
@@ -1175,7 +1064,7 @@ class FormsLogic {
     if (!this.client || !this.user) return;
     try { await this.client.from("qq_forms").upsert({ id, data: this.db[id], updated_at: new Date().toISOString() }); } catch (e) { console.error("sync", e); }
   }
-  disconnect() { this.client = null; this.supa = null; clearCreds(); this.setCloud("local"); }
+  disconnect() { this.client = null; this.user = null; this.setCloud("disabled"); }
 
   openSchema() { this._tab = this._tab || "sql"; this.showCode(); const m = document.getElementById("modal"); if (m) m.classList.add("open"); }
   showCode() { const out = this._tab === "json" ? this.jsonSchema() : this.sqlDDL(); const o = document.getElementById("code-out"); if (o) o.textContent = out; }
@@ -1301,7 +1190,6 @@ export default function FormsApp() {
               <button className="btn" id="btn-guide">Hide guidance</button>
               <span className="cloud" id="cloud"><span className="cd"></span><span className="cl">Local only</span></span>
               <span className="saved" id="saved"><span className="dotg"></span> Saved</span>
-              <button className="btn" id="btn-connect">Connect DB</button>
               <button className="btn" id="btn-account">Sign in</button>
               <button className="btn" id="btn-export">Export data</button>
               <button className="btn" id="btn-import">Import</button>
@@ -1322,77 +1210,9 @@ export default function FormsApp() {
           </div>
           <div className="codewrap"><pre id="code-out"></pre></div>
           <div className="modal-foot">
-            <span className="hint">Each form is a table; multi-row sections (e.g. Requirements, Timeline) become child tables. Hand this to your dev team or load it into Postgres / Supabase.</span>
+            <span className="hint">Each form is a table; multi-row sections (e.g. Requirements, Timeline) become child tables. Use this reference when implementing the approved server-side data provider.</span>
             <div style={{ display: "flex", gap: "8px" }}><button className="btn" id="btn-copy">Copy</button><button className="btn primary" id="btn-dl">Download</button></div>
           </div>
-        </div>
-      </div>
-      <div className="modal" id="cmodal">
-        <div className="sheetm" style={{ width: "min(620px,100%)" }}>
-          <header><h3>Connect a database</h3><button className="iconbtn" id="c-close">×</button></header>
-          <div style={{ padding: "18px 22px", overflow: "auto" }}>
-            <p style={{ fontSize: "12.5px", lineHeight: 1.55, color: "var(--muted)", margin: "0 0 14px" }}>Sync to your own Supabase project. First, run this once in the Supabase SQL editor, then paste your project URL and anon public key below.</p>
-            <div className="codewrap" style={{ margin: "0 0 16px" }}><pre id="supa-sql"></pre></div>
-            <div className="cfield"><label>Supabase URL</label><input id="c-url" placeholder="https://xxxx.supabase.co" autoComplete="off" /></div>
-            <div className="cfield"><label>Anon public key</label><input id="c-key" placeholder="eyJhbGci…" autoComplete="off" /></div>
-            <p style={{ fontSize: "11px", lineHeight: 1.5, color: "var(--faint)", margin: "4px 0 0" }}>Credentials are stored only in this browser. The anon key is safe to use client-side when row-level security is configured.</p>
-          </div>
-          <div className="modal-foot">
-            <button className="btn" id="c-disconnect">Disconnect</button>
-            <div style={{ display: "flex", gap: "8px" }}><button className="btn" id="c-close2">Cancel</button><button className="btn primary" id="c-connect">Connect &amp; sync</button></div>
-          </div>
-        </div>
-      </div>
-      <div className="modal" id="amodal">
-        <div className="sheetm" style={{ width: "min(440px,100%)" }}>
-          <header><h3>Account</h3><button className="iconbtn" id="a-close">×</button></header>
-          <div style={{ padding: "18px 22px" }}>
-            <p style={{ fontSize: "12.5px", lineHeight: 1.5, color: "var(--muted)", margin: "0 0 14px" }}>Sign in to keep your own submissions — as many named instances per form as you need. Requires a connected database.</p>
-            <div className="cfield"><label>Email</label><input id="a-email" type="email" autoComplete="username" placeholder="you@company.com" /></div>
-            <div className="cfield"><label>Password</label><input id="a-pw" type="password" autoComplete="current-password" placeholder="••••••••" /></div>
-            <p id="a-msg" style={{ fontSize: "11.5px", lineHeight: 1.45, color: "var(--muted)", minHeight: "16px", margin: "2px 0 0" }}></p>
-          </div>
-          <div className="modal-foot">
-            <button className="btn" id="a-magic">Email a magic link</button>
-            <div style={{ display: "flex", gap: "8px" }}><button className="btn" id="a-signup">Create account</button><button className="btn primary" id="a-signin">Sign in</button></div>
-          </div>
-        </div>
-      </div>
-      <div id="landing" className="landing hidden">
-        <div className="lnd-card">
-          <div className="lnd-card-brand">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/qq-logo.png" alt="QQ Studios" />
-            <span>QQ-Studios</span>
-          </div>
-          <h2>Sign in to your workspace</h2>
-          <p className="lnd-subtitle">77 guided document templates, auto-saved to your account.</p>
-          <div className="lnd-tabs">
-            <button className="lnd-tab active" data-lt="in">Sign in</button>
-            <button className="lnd-tab" data-lt="up">Create account</button>
-          </div>
-          <div id="lnd-auth">
-            <label className="lnd-fl">Email</label>
-            <input id="l-email" type="email" autoComplete="username" placeholder="you@company.com" />
-            <label className="lnd-fl">Password</label>
-            <input id="l-pw" type="password" autoComplete="current-password" placeholder="••••••••" />
-            <p id="l-msg" className="lnd-msg"></p>
-            <button className="lnd-primary" id="l-submit">Sign in</button>
-            <button className="lnd-ghost" id="l-magic">Email me a magic link instead</button>
-                <div className="lnd-sep"><span>or</span></div>
-                <button className="lnd-microsoft" id="l-microsoft">
-                  <svg viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
-                  Sign in with Microsoft
-                </button>
-          </div>
-          <div id="lnd-signed" style={{ display: "none" }}>
-            <p className="lnd-signed-txt">Signed in as <b id="l-who"></b></p>
-            <button className="lnd-primary" id="l-continue">Continue to your forms</button>
-            <button className="lnd-ghost" id="l-signout">Sign out</button>
-          </div>
-          <p className="lnd-note">
-            Sign in to save your work. <span id="l-cloud" className="lnd-cloud"></span>
-          </p>
         </div>
       </div>
     </div>

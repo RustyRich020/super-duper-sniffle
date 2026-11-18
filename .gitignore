@@ -30,3 +30,6 @@ next-env.d.ts
 
 # vercel
 .vercel
+# Repository auth helpers are source code, not generated output.
+!lib/
+!lib/auth.ts

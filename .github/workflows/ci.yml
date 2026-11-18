@@ -8,6 +8,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      AZURE_CLIENT_ID: 00000000-0000-0000-0000-000000000000
+      AZURE_CLIENT_SECRET: ci-build-placeholder
+      AZURE_TENANT_ID: 00000000-0000-0000-0000-000000000000
+      NEXTAUTH_SECRET: ci-only-placeholder-secret-not-used-outside-tests
+      NEXTAUTH_URL: http://localhost:3000
+      WORKSPACE_ALLOWED_APP_ROLES: Workspace.Admin
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,11 +28,6 @@ jobs:
         run: npx tsc --noEmit
       - name: Build
         run: npm run build
-        env:
-          # Client-side public vars; optional at build time (the app falls back
-          # to local-only mode), provided here if configured as repo secrets.
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       - name: Smoke test (boot + HTTP 200 on /)
         run: |
           npm run start &
