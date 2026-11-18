@@ -6,6 +6,7 @@ import { NAV_CSS } from "./nav-css";
 
 const ROUTES = [
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/service-hub", label: "Service Hub" },
   { href: "/", label: "Forms" },
   { href: "/notebook", label: "Notebook" },
   { href: "/workbook", label: "Workbook" },
@@ -31,7 +32,7 @@ export default function NavBar() {
             <li key={r.href}>
               <Link
                 href={r.href}
-                className={pathname === r.href ? "active" : ""}
+                className={pathname === r.href || (r.href !== "/" && pathname.startsWith(`${r.href}/`)) ? "active" : ""}
               >
                 {r.label}
               </Link>

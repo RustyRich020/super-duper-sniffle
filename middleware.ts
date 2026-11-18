@@ -3,7 +3,11 @@ import { withAuth } from "next-auth/middleware";
 export default withAuth({
   pages: { signIn: "/login" },
   callbacks: {
-    authorized: ({ token }) => Boolean(token),
+    authorized: ({ token }) =>
+      Boolean(
+        token?.workspaceAuthorized === true &&
+          token.tenantId === process.env.AZURE_TENANT_ID,
+      ),
   },
 });
 

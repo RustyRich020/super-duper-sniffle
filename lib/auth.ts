@@ -7,12 +7,36 @@ function required(name: string): string {
   return value;
 }
 
-function allowedEmails(): Set<string> {
+function configuredSet(name: string): Set<string> {
   return new Set(
-    (process.env.WORKSPACE_ALLOWED_EMAILS || "")
+    (process.env[name] || "")
       .split(",")
       .map((value) => value.trim().toLowerCase())
       .filter(Boolean),
+  );
+}
+
+type EntraProfile = {
+  sub: string;
+  name?: string;
+  email?: string;
+  preferred_username?: string;
+  upn?: string;
+  tid?: string;
+  roles?: string[];
+  groups?: string[];
+};
+
+function hasWorkspaceAccess(profile: EntraProfile): boolean {
+  const allowedRoles = configuredSet("WORKSPACE_ALLOWED_APP_ROLES");
+  const allowedGroups = configuredSet("WORKSPACE_ALLOWED_GROUP_IDS");
+  if (allowedRoles.size === 0 && allowedGroups.size === 0) return false;
+
+  const roles = (profile.roles || []).map((value) => value.toLowerCase());
+  const groups = (profile.groups || []).map((value) => value.toLowerCase());
+  return (
+    roles.some((role) => allowedRoles.has(role)) ||
+    groups.some((group) => allowedGroups.has(group))
   );
 }
 
@@ -28,7 +52,7 @@ export const authOptions: NextAuthOptions = {
           prompt: "select_account",
         },
       },
-      profile(profile) {
+      profile(profile: EntraProfile) {
         const email = String(
           profile.email || profile.preferred_username || profile.upn || "",
         )
@@ -41,6 +65,8 @@ export const authOptions: NextAuthOptions = {
           email,
           image: null,
           tenantId: profile.tid,
+          roles: profile.roles || [],
+          groups: profile.groups || [],
         };
       },
     }),
@@ -48,26 +74,22 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt", maxAge: 8 * 60 * 60 },
   pages: { signIn: "/login", error: "/login" },
   callbacks: {
-    async signIn({ user, profile }) {
-      const entraProfile = profile as
-        | { email?: string }
-        | undefined;
-
-      const allowed = allowedEmails();
-      const identities = [
-        user.email,
-        entraProfile?.email,
-      ]
-        .map((value) => value?.trim().toLowerCase() || "")
-        .filter(Boolean);
-
-      return allowed.size > 0 && identities.some((identity) => allowed.has(identity));
+    async signIn({ profile }) {
+      const entraProfile = profile as EntraProfile | undefined;
+      return Boolean(
+        entraProfile &&
+          entraProfile.tid === required("AZURE_TENANT_ID") &&
+          hasWorkspaceAccess(entraProfile),
+      );
     },
     async jwt({ token, profile }) {
       if (profile) {
         // The provider's authority is tenant-specific, so a successful token
         // exchange has already been restricted to this configured tenant.
         token.tenantId = required("AZURE_TENANT_ID");
+        token.workspaceAuthorized = hasWorkspaceAccess(profile as EntraProfile);
+        token.workspaceRoles = (profile as EntraProfile).roles || [];
+        token.workspaceGroups = (profile as EntraProfile).groups || [];
       }
       return token;
     },
@@ -75,6 +97,8 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         (session.user as typeof session.user & { tenantId?: string }).tenantId =
           token.tenantId as string | undefined;
+        (session.user as typeof session.user & { roles?: string[] }).roles =
+          (token.workspaceRoles as string[] | undefined) || [];
       }
       return session;
     },

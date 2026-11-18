@@ -1,0 +1,26 @@
+[
+  {
+    "allowedMemberTypes": ["User"],
+    "description": "Administer Workspace configuration, service delivery, and protected content.",
+    "displayName": "Workspace Administrator",
+    "id": "5896bdb5-7b0f-473c-a2a0-c9fbf3fd6d70",
+    "isEnabled": true,
+    "value": "Workspace.Admin"
+  },
+  {
+    "allowedMemberTypes": ["User"],
+    "description": "Create and update approved Workspace content and service records.",
+    "displayName": "Workspace Contributor",
+    "id": "144f4f2a-f552-459c-b67b-03c1f52e543f",
+    "isEnabled": true,
+    "value": "Workspace.Contributor"
+  },
+  {
+    "allowedMemberTypes": ["User"],
+    "description": "Read approved Workspace content and reports.",
+    "displayName": "Workspace Reader",
+    "id": "feff3369-49c5-4fac-89dc-50643c89d26d",
+    "isEnabled": true,
+    "value": "Workspace.Reader"
+  }
+]
