@@ -41,6 +41,26 @@ function hasWorkspaceAccess(profile: EntraProfile): boolean {
 }
 
 export const authOptions: NextAuthOptions = {
+  logger: {
+    error(code, metadata) {
+      const error = (metadata instanceof Error ? metadata : metadata?.error) as
+        | (Error & { code?: string; type?: string; error?: string })
+        | undefined;
+      console.error(
+        JSON.stringify({
+          event: "next-auth-error",
+          code,
+          errorName: error?.name || null,
+          errorCode: error?.code || error?.error || null,
+          errorType: error?.type || null,
+        }),
+      );
+    },
+    warn(code) {
+      console.warn(JSON.stringify({ event: "next-auth-warning", code }));
+    },
+    debug() {},
+  },
   providers: [
     AzureADProvider({
       clientId: required("AZURE_CLIENT_ID"),
