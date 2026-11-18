@@ -6,7 +6,8 @@
 // body; all behavior is attached in a run-once useEffect that drives the same
 // imperative innerHTML rendering and document.getElementById wiring the
 // prototype used. Model logic (defs, schema) comes from lib/forms-model;
-// Supabase comes from lib/supabase; planner sample data from lib/planner-sample.
+// Local draft persistence is retained; cloud persistence stays disabled until
+// an authenticated server-side data provider is approved.
 
 import { useEffect, useRef } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -59,7 +60,6 @@ class FormsLogic {
   domains: string[] = [];
   collapsed = new Set<number>();
   client: SupabaseClient | null = null;
-  supa: { url: string; key: string } | null = null;
   user: SUser | null = null;
   byForm: Record<string, Sub[]> = {};
   active: Record<string, string | null> = {};
@@ -109,8 +109,6 @@ class FormsLogic {
     this.renderIndex();
     this.wireChrome();
     this.initViews();
-    const ss = document.getElementById("supa-sql");
-    if (ss) ss.textContent = this.supaSQL();
     this.initBackend();
     this._hashHandler = () => this.route();
     window.addEventListener("hashchange", this._hashHandler);
@@ -965,15 +963,6 @@ class FormsLogic {
         const g = h.parentElement as HTMLElement; g.classList.toggle("collapsed"); const di = +(h.dataset.toggle as string);
         if (g.classList.contains("collapsed")) this.collapsed.add(di); else this.collapsed.delete(di);
       });
-    const cm = document.getElementById("cmodal");
-    const bc = document.getElementById("btn-connect");
-    if (bc && cm) bc.onclick = () => { if (this.supa) { (document.getElementById("c-url") as HTMLInputElement).value = this.supa.url; (document.getElementById("c-key") as HTMLInputElement).value = this.supa.key; } cm.classList.add("open"); };
-    const cclose = document.getElementById("c-close"); if (cclose && cm) cclose.onclick = () => cm.classList.remove("open");
-    const cclose2 = document.getElementById("c-close2"); if (cclose2 && cm) cclose2.onclick = () => cm.classList.remove("open");
-    if (cm) cm.onclick = (e: Event) => { if (e.target === cm) cm.classList.remove("open"); };
-    const cconnect = document.getElementById("c-connect");
-    if (cconnect) cconnect.onclick = () => { const u = (document.getElementById("c-url") as HTMLInputElement).value.trim(), k = (document.getElementById("c-key") as HTMLInputElement).value.trim(); if (u && k) this.connect(u, k, false); };
-    const cdis = document.getElementById("c-disconnect"); if (cdis && cm) cdis.onclick = () => { this.disconnect(); cm.classList.remove("open"); };
     const ba = document.getElementById("btn-account");
     if (ba) ba.onclick = () => window.location.assign("/api/auth/signout?callbackUrl=/login");
   }
@@ -1052,10 +1041,9 @@ class FormsLogic {
     this.renderForm(def);
   }
 
-  // ---------- Supabase backend ----------
+  // ---------- server data provider (disabled in this release) ----------
   initBackend() {
     this.client = null;
-    this.supa = null;
     this.user = null;
     this.setCloud("disabled");
   }
@@ -1064,16 +1052,6 @@ class FormsLogic {
     c.classList.toggle("on", state === "connected");
     const label = ({ local: "Local only", disabled: "Cloud save disabled", connecting: "Connecting…", connected: "Connected", error: "Connect failed" } as Record<string, string>)[state] || state;
     const cl = c.querySelector(".cl"); if (cl) cl.textContent = label;
-  }
-  async connect(url: string, key: string, silent?: boolean) {
-    void url;
-    void key;
-    void silent;
-    this.client = null;
-    this.supa = null;
-    this.user = null;
-    this.setCloud("disabled");
-    this.toast("Cloud persistence is disabled until the authenticated server data API is ready.", "info");
   }
   async loadRemote() {
     if (!this.client || !this.user) return;
@@ -1086,7 +1064,7 @@ class FormsLogic {
     if (!this.client || !this.user) return;
     try { await this.client.from("qq_forms").upsert({ id, data: this.db[id], updated_at: new Date().toISOString() }); } catch (e) { console.error("sync", e); }
   }
-  disconnect() { this.client = null; this.supa = null; this.user = null; this.setCloud("disabled"); }
+  disconnect() { this.client = null; this.user = null; this.setCloud("disabled"); }
 
   openSchema() { this._tab = this._tab || "sql"; this.showCode(); const m = document.getElementById("modal"); if (m) m.classList.add("open"); }
   showCode() { const out = this._tab === "json" ? this.jsonSchema() : this.sqlDDL(); const o = document.getElementById("code-out"); if (o) o.textContent = out; }
@@ -1212,7 +1190,6 @@ export default function FormsApp() {
               <button className="btn" id="btn-guide">Hide guidance</button>
               <span className="cloud" id="cloud"><span className="cd"></span><span className="cl">Local only</span></span>
               <span className="saved" id="saved"><span className="dotg"></span> Saved</span>
-              <button className="btn" id="btn-connect">Connect DB</button>
               <button className="btn" id="btn-account">Sign in</button>
               <button className="btn" id="btn-export">Export data</button>
               <button className="btn" id="btn-import">Import</button>
@@ -1233,24 +1210,8 @@ export default function FormsApp() {
           </div>
           <div className="codewrap"><pre id="code-out"></pre></div>
           <div className="modal-foot">
-            <span className="hint">Each form is a table; multi-row sections (e.g. Requirements, Timeline) become child tables. Hand this to your dev team or load it into Postgres / Supabase.</span>
+            <span className="hint">Each form is a table; multi-row sections (e.g. Requirements, Timeline) become child tables. Use this reference when implementing the approved server-side data provider.</span>
             <div style={{ display: "flex", gap: "8px" }}><button className="btn" id="btn-copy">Copy</button><button className="btn primary" id="btn-dl">Download</button></div>
-          </div>
-        </div>
-      </div>
-      <div className="modal" id="cmodal">
-        <div className="sheetm" style={{ width: "min(620px,100%)" }}>
-          <header><h3>Connect a database</h3><button className="iconbtn" id="c-close">×</button></header>
-          <div style={{ padding: "18px 22px", overflow: "auto" }}>
-            <p style={{ fontSize: "12.5px", lineHeight: 1.55, color: "var(--muted)", margin: "0 0 14px" }}>Sync to your own Supabase project. First, run this once in the Supabase SQL editor, then paste your project URL and anon public key below.</p>
-            <div className="codewrap" style={{ margin: "0 0 16px" }}><pre id="supa-sql"></pre></div>
-            <div className="cfield"><label>Supabase URL</label><input id="c-url" placeholder="https://xxxx.supabase.co" autoComplete="off" /></div>
-            <div className="cfield"><label>Anon public key</label><input id="c-key" placeholder="eyJhbGci…" autoComplete="off" /></div>
-            <p style={{ fontSize: "11px", lineHeight: 1.5, color: "var(--faint)", margin: "4px 0 0" }}>Credentials are stored only in this browser. The anon key is safe to use client-side when row-level security is configured.</p>
-          </div>
-          <div className="modal-foot">
-            <button className="btn" id="c-disconnect">Disconnect</button>
-            <div style={{ display: "flex", gap: "8px" }}><button className="btn" id="c-close2">Cancel</button><button className="btn primary" id="c-connect">Connect &amp; sync</button></div>
           </div>
         </div>
       </div>
