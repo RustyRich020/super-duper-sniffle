@@ -22,7 +22,12 @@ export const authOptions: NextAuthOptions = {
       clientId: required("AZURE_CLIENT_ID"),
       clientSecret: required("AZURE_CLIENT_SECRET"),
       tenantId: required("AZURE_TENANT_ID"),
-      authorization: { params: { scope: "openid profile email" } },
+      authorization: {
+        params: {
+          scope: "openid profile email",
+          prompt: "select_account",
+        },
+      },
     }),
   ],
   session: { strategy: "jwt", maxAge: 8 * 60 * 60 },
