@@ -1,15 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { getEmbedToken } from "@/lib/powerbi";
 
-export async function GET(req: NextRequest) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { global: { headers: { cookie: req.headers.get("cookie") || "" } } }
-  );
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
